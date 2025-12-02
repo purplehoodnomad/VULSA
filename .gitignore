@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+.Python
+env/
+.venv/
+# If you use a specific name for your virtual environment, add it here, e.g.
+# .venv/
+# For pipenv, you might ignore virtualenv folder
+# For poetry, you should generally commit poetry.lock, but ignore the venv
+# .poetry/venv/
+
+# Environment files
+.env
+.flaskenv
+
+# Docker
+# Ignore locally built images/containers specific files if needed
+# For example, ignore the .dockerignore file itself from git (if applicable in your setup, generally it is versioned)
+
+# IDE/Editor files
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
