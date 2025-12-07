@@ -20,7 +20,9 @@ async def lifespan(app: FastAPI):
 
     # --- startup: создаём таблицы один раз (идемпотентно) ---
     async with sessionmanager.connect() as connection:
+        await sessionmanager.drop_all(connection)
         await sessionmanager.create_all(connection)
+        
 
     try:
         yield
