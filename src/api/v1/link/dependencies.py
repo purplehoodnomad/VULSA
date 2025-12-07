@@ -1,12 +1,15 @@
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from ....domain.link.repository import AbstractLinkRepository
-from ....infrastructure.repositories.inmemory.link import InMemoryLinkRepository
+from ....infrastructure.repositories.postgresql.link import PostgresLinkRepository
+
+from ....databases.postgresql.session import get_async_session
 
 
-_link_repo = InMemoryLinkRepository()
 
-
-def get_link_repo() -> AbstractLinkRepository:
+def get_link_repo(session: AsyncSession = Depends(get_async_session)) -> AbstractLinkRepository:
     """
     Возвращает конкретную реализацию с универсальными AbstractLinkRepository методами, чтобы не зависеть от варианта реализации репозитория.
     """
-    return _link_repo
+    return PostgresLinkRepository(session)

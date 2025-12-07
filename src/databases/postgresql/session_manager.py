@@ -40,14 +40,9 @@ class DatabaseSessionManager:
         if self._sessionmaker is None:
             raise Exception("DatabaseSessionManager is not initialized")
 
-        session = self._sessionmaker()
-        try:
+        async with self._sessionmaker() as session:
             yield session # аналогично, но выплевывает AsyncSession
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+
 
     # Used for testing
     async def create_all(self, connection: AsyncConnection):

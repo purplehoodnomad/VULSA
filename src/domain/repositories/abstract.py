@@ -4,27 +4,27 @@ from typing import Generic, TypeVar
 
 TEntity = TypeVar("TEntity")
 TId = TypeVar("TId")
-TCreateDTO = TypeVar("TCreateDTO")
-TUpdateDTO = TypeVar("TUpdateDTO")
+# TCreateDTO = TypeVar("TCreateDTO")
+# TUpdateDTO = TypeVar("TUpdateDTO")
 
 
-class AbstractRepository(Generic[TEntity, TId, TCreateDTO, TUpdateDTO], ABC):
-    @abstractmethod
-    def get(self, entity_id: TId) -> TEntity:
-        raise NotImplementedError
+class AbstractRepository(Generic[TEntity, TId], ABC):
+    # @abstractmethod
+    # async def get(self, entity_id: TId) -> TEntity:
+    #     raise NotImplementedError
 
-    @abstractmethod
-    def list(self, *, limit: int = 100, offset: int = 0) -> list[TEntity]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def create(self, dto: TCreateDTO) -> TEntity:
-        raise NotImplementedError
+    # @abstractmethod
+    # async def list(self, *, limit: int = 100, offset: int = 0) -> list[TEntity]:
+    #     raise NotImplementedError
 
     @abstractmethod
-    def update(self, entity_id: TId, dto: TUpdateDTO, wipe: bool) -> TEntity:
+    async def create(self, entity: TEntity) -> TEntity:
         raise NotImplementedError
 
-    @abstractmethod
-    def delete(self, entity_id: TId) -> None:
-        raise NotImplementedError
+    # @abstractmethod
+    # async def update(self, entity_id: TId, dto: TUpdateDTO, wipe: bool) -> TEntity:
+    #     raise NotImplementedError
+
+    # @abstractmethod
+    # async def delete(self, entity_id: TId) -> None:
+    #     raise NotImplementedError
