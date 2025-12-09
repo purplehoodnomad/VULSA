@@ -6,7 +6,8 @@ from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
 
 from usecase.link import (
     CreateLinkUsecase, CreateLinkUsecaseImpl,
-    GetLinkByIdUseCase, GetLinkByIdUseCaseImpl
+    GetLinkByIdUseCase, GetLinkByIdUseCaseImpl,
+    LinkRedirectUseCase, LinkRedirectUseCaseImpl
 )
 
 
@@ -19,3 +20,6 @@ def get_link_create_usecase(uow: PostgreSQLLinkUoW = Depends(get_link_uow)) -> C
 
 def get_link_get_by_id_usecase(uow: PostgreSQLLinkUoW = Depends(get_link_uow)) -> GetLinkByIdUseCase:
     return GetLinkByIdUseCaseImpl(uow)
+
+def get_link_redirect_usecase(uow: PostgreSQLLinkUoW = Depends(get_link_uow)) -> LinkRedirectUseCase:
+    return LinkRedirectUseCaseImpl(uow)

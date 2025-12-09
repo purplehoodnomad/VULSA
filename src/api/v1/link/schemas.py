@@ -28,8 +28,8 @@ class LinkUpdateSchema(BaseModel):
 
 class LinkSchema(BaseModel):
     link_id: UUID
-    user_id: Optional[UUID]
-    long: Optional[str]
+    user_id: UUID
+    long: str
     short: Optional[str]
     times_used: Optional[int]
     is_active: Optional[bool]
