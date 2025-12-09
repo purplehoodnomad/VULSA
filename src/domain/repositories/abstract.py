@@ -9,9 +9,9 @@ TId = TypeVar("TId")
 
 
 class AbstractRepository(Generic[TEntity, TId], ABC):
-    # @abstractmethod
-    # async def get(self, entity_id: TId) -> TEntity:
-    #     raise NotImplementedError
+    @abstractmethod
+    async def get(self, entity_id: TId) -> TEntity:
+        raise NotImplementedError
 
     # @abstractmethod
     # async def list(self, *, limit: int = 100, offset: int = 0) -> list[TEntity]:

@@ -1,14 +1,18 @@
+from uuid import UUID
+
 from fastapi import status, APIRouter, Depends
 from fastapi.responses import JSONResponse # RedirectResponse
 
-# from domain.link.exceptions import LinkDoesNotExist, ShortLinkAlreadyExists
+from domain.link.exceptions import LinkDoesNotExist #, ShortLinkAlreadyExists
 
 from usecase.link.dto import LinkCreateDTO
 from usecase.link import (
-    CreateLinkUsecase
+    CreateLinkUsecase,
+    GetLinkByIdUseCase
 )
 from infrastructure.di.injection import (
-    get_link_create_usecase
+    get_link_create_usecase,
+    get_link_get_by_id_usecase
 )
 
 from .schemas import LinkSchema, LinkCreateSchema
@@ -35,16 +39,17 @@ async def create_short_link(
     return JSONResponse(content=link.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
 
 
-# @router.get("/details/{url_id}", response_model=LinkSchema)
-# async def get_link_data(url_id: UUID, repo: AbstractLinkRepository = Depends(get_link_repo),) -> JSONResponse:
-#     try:
-#         link = await repo.get(url_id)
-#     except LinkDoesNotExist:
-#         return JSONResponse(content="", status_code=status.HTTP_404_NOT_FOUND)
+@router.get("/details/{url_id}", response_model=LinkSchema)
+async def get_link_data(
+    link_id: UUID,
+    usecase: GetLinkByIdUseCase = Depends(get_link_get_by_id_usecase)
+) -> JSONResponse:
+    try:
+        link = await usecase.execute(link_id)
+    except LinkDoesNotExist:
+        return JSONResponse(content="", status_code=status.HTTP_404_NOT_FOUND)
 
-#     data = link_dto_to_schema(link)
-
-#     return JSONResponse(content=data.model_dump(mode="json"), status_code=status.HTTP_200_OK)
+    return JSONResponse(content=link.model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
 
 # @router.get("", response_model=LinkListSchema)

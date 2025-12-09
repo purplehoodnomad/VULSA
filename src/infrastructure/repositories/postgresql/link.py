@@ -9,6 +9,7 @@ from databases.postgresql.models import LinkORM
 
 from domain.link.repository import AbstractLinkRepository
 from domain.link.entity import Link
+from domain.common.value_objects import LinkId
 from domain.link.exceptions import LinkDoesNotExist, ShortLinkAlreadyExists
 
 
@@ -20,20 +21,15 @@ class PostgresLinkRepository(AbstractLinkRepository):
         link_orm = LinkORM.from_entity(entity)
 
         self._session.add(link_orm)
-        
-        try:
-            await self._session.flush()
-        except IntegrityError:
-            await self._session.rollback()
-            raise ShortLinkAlreadyExists(link_orm.short)
+        await self._session.flush()
         
         return link_orm.to_entity()
 
 
-    # async def get(self, url_id: LinkId) -> Link:
-    #     link = await self._session.get(Link, url_id)
+    async def get(self, link_id: LinkId) -> Link:
+        link_orm = await self._session.get(LinkORM, link_id.value)
 
-    #     if link is None:
-    #         raise LinkDoesNotExist()
+        if link_orm is None:
+            raise LinkDoesNotExist()
 
-    #     return link_to_dto(link)
+        return link_orm.to_entity()

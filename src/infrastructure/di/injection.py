@@ -5,7 +5,8 @@ from databases.postgresql.session import get_async_session
 from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
 
 from usecase.link import (
-    CreateLinkUsecase, CreateLinkUsecaseImpl
+    CreateLinkUsecase, CreateLinkUsecaseImpl,
+    GetLinkByIdUseCase, GetLinkByIdUseCaseImpl
 )
 
 
@@ -15,3 +16,6 @@ def get_link_uow(session: AsyncSession = Depends(get_async_session)) -> PostgreS
 
 def get_link_create_usecase(uow: PostgreSQLLinkUoW = Depends(get_link_uow)) -> CreateLinkUsecase:
     return CreateLinkUsecaseImpl(uow)
+
+def get_link_get_by_id_usecase(uow: PostgreSQLLinkUoW = Depends(get_link_uow)) -> GetLinkByIdUseCase:
+    return GetLinkByIdUseCaseImpl(uow)

@@ -1,1 +1,2 @@
 from .create_link import CreateLinkUsecase, CreateLinkUsecaseImpl
+from .get_link_by_id import GetLinkByIdUseCase, GetLinkByIdUseCaseImpl
