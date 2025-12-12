@@ -50,6 +50,3 @@ class DatabaseSessionManager:
 
     async def drop_all(self, connection: AsyncConnection):
         await connection.run_sync(Base.metadata.drop_all)
-
-
-sessionmanager = DatabaseSessionManager()

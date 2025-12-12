@@ -3,15 +3,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from config import DEV
-
 from api.v1 import routers as api_v1
+from container import Container
 
-from databases.postgresql.session_manager import sessionmanager
+container = Container()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Код до yield выполняется один раз на старте (инициализация ресурсов: БД, кэш, клиенты).
+    sessionmanager = container.session_manager()
 
     if DEV:
         sessionmanager.init("postgresql+asyncpg://user:password@localhost:5433/backend_course")
@@ -23,7 +24,13 @@ async def lifespan(app: FastAPI):
         if DEV:
             await sessionmanager.drop_all(connection)
         await sessionmanager.create_all(connection)
-        
+
+        container.wire(
+        modules=[
+            "infrastructure.databases.postgresql.session",
+            "api.v1.link.dependencies"
+        ]
+    )  
 
     try:
         yield
@@ -32,6 +39,7 @@ async def lifespan(app: FastAPI):
     finally:
         # --- shutdown: корректно закрываем пул соединений ---
         await sessionmanager.close()
+    
 
 app = FastAPI(lifespan=lifespan)
 

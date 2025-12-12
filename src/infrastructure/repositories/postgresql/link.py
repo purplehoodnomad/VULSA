@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from databases.postgresql.models import LinkORM
+from infrastructure.databases.postgresql.models import LinkORM
 
 from domain.link.repository import AbstractLinkRepository
 from domain.link.entity import Link

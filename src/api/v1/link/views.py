@@ -11,7 +11,7 @@ from usecase.link import (
     GetLinkByIdUseCase,
     LinkRedirectUseCase
 )
-from infrastructure.di.injection import (
+from .dependencies import (
     get_link_create_usecase,
     get_link_get_by_id_usecase,
     get_link_redirect_usecase
