@@ -33,7 +33,7 @@ class Short:
         Generates short link suffix of max available size by default.
         """
         size = MAX_SHORT_LINK_LENGTH if len > MAX_SHORT_LINK_LENGTH or len < MIN_SHORT_LINK_LENGTH or len <= 0 else len
-        return Short(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(size)))
+        return Short(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(size)).lower())
 
     def __post_init__(self):
         if not (MIN_SHORT_LINK_LENGTH <= len(self.value) <= MAX_SHORT_LINK_LENGTH):

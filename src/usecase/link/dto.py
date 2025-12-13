@@ -25,14 +25,3 @@ class LinkCreateDTO:
     short: Optional[str]
     expires_at: Optional[datetime]
     redirect_limit: Optional[int]
-
-
-# @dataclass(slots=True)
-# class LinkUpdate:
-#     url_id: Optional[UUID] = None
-#     is_active: Optional[bool] = None
-#     user_id: Optional[UUID] = None
-#     expires_at: Optional[datetime] = None
-#     redirect_limit: Optional[int] = None
-#     times_used: Optional[int] = None
-

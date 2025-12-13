@@ -9,15 +9,17 @@ from usecase.link.dto import LinkCreateDTO
 from usecase.link import (
     CreateLinkUsecase,
     GetLinkByIdUseCase,
-    LinkRedirectUseCase
+    LinkRedirectUseCase,
+    GetLinkListUsecase
 )
 from .dependencies import (
     get_link_create_usecase,
     get_link_get_by_id_usecase,
-    get_link_redirect_usecase
+    get_link_redirect_usecase,
+    get_link_list_usecase
 )
 
-from .schemas import LinkSchema, LinkCreateSchema
+from .schemas import LinkSchema, LinkCreateSchema, LinkListSchema, LinkListQueryParams 
 
 
 router = APIRouter(prefix="/links")
@@ -65,6 +67,26 @@ async def process_redirect(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     return RedirectResponse(url=link.long, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+
+@router.get("", response_model=LinkListSchema)
+async def get_links_list(
+    params: LinkListQueryParams = Depends(),
+    usecase: GetLinkListUsecase = Depends(get_link_list_usecase)
+) -> JSONResponse:
+    
+    links = await usecase.execute(
+        offset=params.offset,
+        limit=params.limit,
+        user=params.user,
+        older_than=params.older_than,
+        newer_than=params.newer_than,
+        active_status=params.active_status,
+        has_expiration_date=params.has_expiration_date,
+        has_redirect_limit=params.has_redirect_limit
+    )
+
+    return JSONResponse(content=links.model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
 
 

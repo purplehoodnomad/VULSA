@@ -11,6 +11,7 @@ from domain.link.entity import Link
 from domain.common.value_objects import LinkId
 from domain.link.exceptions import LinkDoesNotExist
 from src.domain.link.value_objects import Short
+from domain.link.repository import LinkFilterDto
 
 
 class PostgresLinkRepository(AbstractLinkRepository):
@@ -44,3 +45,34 @@ class PostgresLinkRepository(AbstractLinkRepository):
             raise LinkDoesNotExist()
         
         return link_orm.to_entity()
+    
+    async def list(self,
+        filter: LinkFilterDto
+    ) -> list[Link]:
+        expression = []
+
+        if filter.user is not None:
+            expression.append(LinkORM.user_id == filter.user)
+        if filter.older_than is not None:
+            expression.append(LinkORM.created_at < filter.older_than)
+        if filter.newer_than is not None:
+            expression.append(LinkORM.created_at > filter.newer_than)
+        if filter.active_status is not None:
+            expression.append(LinkORM.is_active == filter.active_status)
+        if filter.has_expiration_date is not None:
+            if filter.has_expiration_date:
+                expression.append(LinkORM.expires_at.isnot(None))
+            else:
+                expression.append(LinkORM.expires_at.is_(None))
+        if filter.has_redirect_limit is not None:
+            if filter.has_redirect_limit:
+                expression.append(LinkORM.redirect_limit.isnot(None))
+            else:
+                expression.append(LinkORM.redirect_limit.is_(None))
+
+        query = select(LinkORM).where(*expression).offset(filter.offset).limit(filter.limit)
+
+        result = await self._session.execute(query)
+        scalars = result.scalars().all()
+
+        return [scalar.to_entity() for scalar in scalars]

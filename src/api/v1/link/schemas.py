@@ -40,3 +40,14 @@ class LinkSchema(BaseModel):
 
 class LinkListSchema(BaseModel):
     data: list[LinkSchema]
+
+
+class LinkListQueryParams(BaseModel):
+    offset: int = Field(0, ge=0)
+    limit: int = Field(2, ge=1, le=100)
+    user: Optional[UUID] = None
+    older_than: Optional[datetime] = None
+    newer_than: Optional[datetime] = None
+    active_status: Optional[bool] = None
+    has_expiration_date: Optional[bool] = None
+    has_redirect_limit: Optional[bool] = None

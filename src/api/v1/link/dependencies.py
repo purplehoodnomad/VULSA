@@ -8,7 +8,8 @@ from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
 from usecase.link import (
     CreateLinkUsecase, CreateLinkUsecaseImpl,
     GetLinkByIdUseCase, GetLinkByIdUseCaseImpl,
-    LinkRedirectUseCase, LinkRedirectUseCaseImpl
+    LinkRedirectUseCase, LinkRedirectUseCaseImpl,
+    GetLinkListUsecase, GetLinkListUsecaseImpl
 )
 
 
@@ -29,3 +30,7 @@ def get_link_get_by_id_usecase(session: AsyncSession = Depends(get_async_session
 def get_link_redirect_usecase(session: AsyncSession = Depends(get_async_session)) -> LinkRedirectUseCase:
     uow = get_link_uow(session)
     return LinkRedirectUseCaseImpl(uow=uow)
+
+def get_link_list_usecase(session: AsyncSession = Depends(get_async_session)) -> GetLinkListUsecase:
+    uow = get_link_uow(session)
+    return GetLinkListUsecaseImpl(uow=uow)
