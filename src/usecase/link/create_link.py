@@ -6,7 +6,7 @@ from domain.link.entity import Link
 from domain.common.value_objects import UserId, LinkId
 from domain.link.value_objects import Long, Short, RedirectLimit
 
-from .mappers import to_schema
+from ..common.mappers import link_entity_to_schema
 from .dto import LinkCreateDTO
 from api.v1.link.schemas import LinkSchema
 
@@ -38,6 +38,6 @@ class CreateLinkUsecaseImpl(CreateLinkUsecase):
             )
             if uow.repository is not None:
                 link = await uow.repository.create(entity)
-                return to_schema(link)
+                return link_entity_to_schema(link)
             
             raise Exception("No repository for UoW")

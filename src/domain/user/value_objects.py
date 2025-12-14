@@ -1,0 +1,54 @@
+from dataclasses import dataclass
+import validators
+
+from utils.enums import UserStatus
+
+
+@dataclass(frozen=True)
+class Email:
+    """Represents email for User entity"""
+    value: str
+
+    def __post_init__(self):
+        if not self.value:
+            raise ValueError("Email is required")
+        
+        if not validators.email(self.value):
+            raise ValueError(f"Invalid email: {self.value}")
+    
+    def __str__(self) -> str:
+        return str(self.value)
+
+
+@dataclass(frozen=True)
+class HashedPassword:
+    """Represents hashed password for User entity"""
+    value: str
+
+    def __post_init__(self):
+        if not self.value:
+            raise ValueError("Password hash is required")
+        
+        if not self.value.startswith("$argon2id$"):
+            raise ValueError("Invalid Argon2 hash format")
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+
+# @dataclass(frozen=True)
+# class Status:
+#     """Represents hashed password for User entity"""
+#     value: UserStatus
+
+#     def __post_init__(self):
+#         if not self.value:
+#             raise ValueError("User status is required")
+        
+#         if not isinstance(self.value, UserStatus):
+#             raise ValueError(f"Invalid user status {self.value}")
+
+#     def __str__(self) -> str:
+#         return str(self.value)
+
+

@@ -5,7 +5,7 @@ from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
 
 from domain.common.value_objects import LinkId
 
-from .mappers import to_schema
+from ..common.mappers import link_entity_to_schema
 from api.v1.link.schemas import LinkSchema
 
 
@@ -26,4 +26,4 @@ class GetLinkByIdUseCaseImpl(GetLinkByIdUseCase):
         async with self.uow as uow:
             if uow.repository is not None:
                 link = await uow.repository.get(LinkId(link_id))
-            return to_schema(link)
+            return link_entity_to_schema(link)

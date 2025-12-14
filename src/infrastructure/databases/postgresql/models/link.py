@@ -23,9 +23,12 @@ from domain.link.value_objects import (
 class LinkORM(Base):
     __tablename__ = "link"
 
+    # атрибут связи, обещаем клас UserORM и links как поле в нем
+    user: Mapped["UserORM"] = relationship("UserORM", back_populates="links") # type: ignore
+
     user_id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),
-        # ForeignKey('user.id'),
+        ForeignKey('user.id'),
         nullable=False
     )
     
@@ -95,5 +98,3 @@ class LinkORM(Base):
             times_used=self.times_used,
             is_active=self.is_active
         )
-    
-    # user: Mapped["User"] = relationship("User", back_populates="links") # атрибут связи, обещаем клас User и links как поле в нем

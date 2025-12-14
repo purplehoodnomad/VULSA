@@ -1,2 +1,2 @@
 from .link import LinkORM
-# from .user import User
+from .user import UserORM

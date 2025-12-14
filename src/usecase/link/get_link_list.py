@@ -7,7 +7,7 @@ from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
 
 from domain.link.repository import LinkFilterDto
 
-from .mappers import to_schema
+from ..common.mappers import link_entity_to_schema
 from api.v1.link.schemas import LinkSchema, LinkListSchema
 
 
@@ -58,4 +58,4 @@ class GetLinkListUsecaseImpl(GetLinkListUsecase):
             if uow.repository is not None:
                 links = await uow.repository.list(filter)
             
-            return LinkListSchema(data=[to_schema(link) for link in links])
+            return LinkListSchema(data=[link_entity_to_schema(link) for link in links])

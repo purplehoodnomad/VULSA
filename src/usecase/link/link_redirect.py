@@ -4,7 +4,7 @@ from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
 
 from domain.link.value_objects import Short
 
-from .mappers import to_schema
+from ..common.mappers import link_entity_to_schema
 from api.v1.link.schemas import LinkSchema
 
 
@@ -28,6 +28,6 @@ class LinkRedirectUseCaseImpl(LinkRedirectUseCase):
         async with self.uow as uow:
             if uow.repository is not None:
                 link = await uow.repository.get_by_short(Short(short))
-                return to_schema(link)
+                return link_entity_to_schema(link)
             
             raise Exception("No repository for UoW")

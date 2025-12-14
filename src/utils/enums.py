@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-
-class UserRole(Enum):
+class UserStatus(Enum):
     ADMIN = 'admin'
     USER = 'user'
+    BLOCKED = 'blocked'
