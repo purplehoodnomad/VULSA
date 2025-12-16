@@ -39,8 +39,5 @@ class CreateUserUsecaseImpl(CreateUserUsecase):
                 hashed_password=HashedPassword(hashed),
                 status=dto.status
             )
-            if uow.repository is not None:
-                output = await uow.repository.create(entity)
-                return user_entity_to_schema(output)
-            
-            raise Exception("No repository for UoW")
+            output = await uow.repository.create(entity)
+            return user_entity_to_schema(output)

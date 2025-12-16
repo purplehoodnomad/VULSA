@@ -5,3 +5,6 @@ class UserDoesNotExist(Exception):
         super().__init__(f"User with id {user_id} does not exist")
         
         self.user_id: UUID | None = user_id
+
+class UserAlreadyExists(Exception):
+    pass

@@ -9,7 +9,7 @@ from infrastructure.databases.postgresql.models import UserORM
 from domain.user.repository import AbstractUserRepository
 from domain.user.entity import User
 from domain.common.value_objects import UserId
-from domain.user.exceptions import UserDoesNotExist
+from domain.user.exceptions import UserDoesNotExist, UserAlreadyExists
 from domain.user.repository import UserFilterDto
 
 
@@ -21,7 +21,12 @@ class PostgresUserRepository(AbstractUserRepository):
         user_orm = UserORM.from_entity(entity)
 
         self._session.add(user_orm)
-        await self._session.flush()
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            if exc.orig and getattr(exc.orig, "pgcode", None) == "23505":
+                raise UserAlreadyExists(entity.email.value) from exc
+            raise   
         
         return user_orm.to_entity()
 
