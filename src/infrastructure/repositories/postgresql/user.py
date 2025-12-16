@@ -8,7 +8,7 @@ from infrastructure.databases.postgresql.models import UserORM
 
 from domain.user.repository import AbstractUserRepository
 from domain.user.entity import User
-from domain.common.value_objects import UserId
+from domain.value_objects.common import UserId
 from domain.user.exceptions import UserDoesNotExist, UserAlreadyExists
 from domain.user.repository import UserFilterDto
 

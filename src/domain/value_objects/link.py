@@ -3,7 +3,7 @@ import secrets, string
 import validators
 from re import fullmatch
 
-from src.config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
+from config.config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
 
 
 @dataclass(frozen=True)

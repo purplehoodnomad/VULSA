@@ -2,8 +2,9 @@ from typing import Optional
 from datetime import datetime
 
 from utils.enums import UserStatus
-from ..common.value_objects import UserId
-from .value_objects import Email, HashedPassword
+
+from domain.value_objects.common import UserId
+from domain.value_objects.user import Email, HashedPassword
 
 
 class User:

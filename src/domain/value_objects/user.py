@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 import validators
 
-from utils.enums import UserStatus
-
 
 @dataclass(frozen=True)
 class Email:
@@ -34,21 +32,3 @@ class HashedPassword:
 
     def __str__(self) -> str:
         return str(self.value)
-
-
-# @dataclass(frozen=True)
-# class Status:
-#     """Represents hashed password for User entity"""
-#     value: UserStatus
-
-#     def __post_init__(self):
-#         if not self.value:
-#             raise ValueError("User status is required")
-        
-#         if not isinstance(self.value, UserStatus):
-#             raise ValueError(f"Invalid user status {self.value}")
-
-#     def __str__(self) -> str:
-#         return str(self.value)
-
-

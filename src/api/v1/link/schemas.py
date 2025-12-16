@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, HttpUrl, Field, BeforeValidator
 
-from config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
+from config.config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
 
 
 def validate_short_link(value: Optional[str]) -> str | None:

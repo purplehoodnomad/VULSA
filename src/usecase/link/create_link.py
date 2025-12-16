@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
 
 from domain.link.entity import Link
-from domain.common.value_objects import UserId, LinkId
-from domain.link.value_objects import Long, Short, RedirectLimit
+from domain.value_objects.common import UserId, LinkId
+from domain.value_objects.link import Long, Short, RedirectLimit
 
 from ..common.mappers import link_entity_to_schema
 from .dto import LinkCreateDTO

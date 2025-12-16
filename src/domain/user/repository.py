@@ -1,11 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 from typing import Optional
 
-from src.domain.repositories.abstract import AbstractRepository
-from .entity import User
-from ..common.value_objects import UserId
 from utils.enums import UserStatus
+
+from domain.repositories.abstract import AbstractRepository
+from domain.value_objects.common import UserId
+
+from .entity import User
 
 
 @dataclass(slots=True)

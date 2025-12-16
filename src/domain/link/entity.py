@@ -1,11 +1,11 @@
 from typing import Optional
 from datetime import datetime
 
-from ..common.value_objects import (
+from domain.value_objects.common import (
     LinkId,
     UserId
 )
-from .value_objects import (
+from domain.value_objects.link import (
     Long,
     Short,
     RedirectLimit

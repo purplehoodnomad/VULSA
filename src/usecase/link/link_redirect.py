@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
 
 from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
-
-from domain.link.value_objects import Short
-
-from ..common.mappers import link_entity_to_schema
+from domain.value_objects.link import Short
+from usecase.common.mappers import link_entity_to_schema
 from api.v1.link.schemas import LinkSchema
 
 

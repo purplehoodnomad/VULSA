@@ -9,9 +9,10 @@ from sqlalchemy import UUID as UUIDAlchemy
 from ..base import Base
 
 from utils.enums import UserStatus
+
 from domain.user.entity import User
-from domain.common.value_objects import UserId
-from domain.user.value_objects import Email, HashedPassword
+from domain.value_objects.common import UserId
+from domain.value_objects.user import Email, HashedPassword
 
 
 class UserORM(Base):

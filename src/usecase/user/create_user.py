@@ -5,11 +5,11 @@ from argon2 import PasswordHasher
 from infrastructure.repositories.postgresql.uow import PostgreSQLUserUoW
 
 from domain.user.entity import User
-from domain.common.value_objects import UserId
-from domain.user.value_objects import Email, HashedPassword
+from domain.value_objects.common import UserId
+from domain.value_objects.user import Email, HashedPassword
 
-from ..common.mappers import user_entity_to_schema
-from ..common.dto import UserCreateDTO
+from usecase.common.mappers import user_entity_to_schema
+from usecase.common.dto import UserCreateDTO
 from api.v1.user.schemas import UserSchema
 
 

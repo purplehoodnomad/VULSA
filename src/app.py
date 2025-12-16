@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from config import DEV
+from config.config import DEV
 from api.v1 import routers as api_v1
 from container import Container
 

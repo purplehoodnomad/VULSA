@@ -8,10 +8,10 @@ from infrastructure.databases.postgresql.models import LinkORM
 
 from domain.link.repository import AbstractLinkRepository
 from domain.link.entity import Link
-from domain.common.value_objects import LinkId
-from domain.link.exceptions import LinkDoesNotExist
-from src.domain.link.value_objects import Short
+from domain.value_objects.common import LinkId
+from domain.value_objects.link import Short
 from domain.link.repository import LinkFilterDto
+from domain.link.exceptions import LinkDoesNotExist
 
 
 class PostgresLinkRepository(AbstractLinkRepository):

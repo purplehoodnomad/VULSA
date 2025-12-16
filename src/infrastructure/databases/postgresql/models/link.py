@@ -9,11 +9,11 @@ from sqlalchemy import UUID as UUIDAlchemy
 from ..base import Base
 
 from domain.link.entity import Link
-from domain.common.value_objects import (
+from domain.value_objects.common import (
     LinkId,
     UserId
 )
-from domain.link.value_objects import (
+from domain.value_objects.link import (
     Long,
     Short,
     RedirectLimit
