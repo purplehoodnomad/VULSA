@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
 
-from argon2 import PasswordHasher
-
 from infrastructure.repositories.postgresql.uow import PostgreSQLUserUoW
 
 from domain.user.entity import User
-from domain.value_objects.common import UserId
 from domain.value_objects.user import Email, HashedPassword
 
 from usecase.common.mappers import user_entity_to_schema
@@ -13,7 +10,7 @@ from usecase.common.dto import UserCreateDTO
 from api.v1.user.schemas import UserSchema
 
 
-class CreateUserUsecase(ABC):
+class AbstractCreateUserUseCase(ABC):
     @abstractmethod
     async def execute(
         self,
@@ -22,7 +19,7 @@ class CreateUserUsecase(ABC):
         raise NotImplementedError
 
 
-class CreateUserUsecaseImpl(CreateUserUsecase):
+class CreateUserUseCasePostgreSQL(AbstractCreateUserUseCase):
     def __init__(self, uow: PostgreSQLUserUoW):
         self.uow = uow
 
@@ -31,13 +28,13 @@ class CreateUserUsecaseImpl(CreateUserUsecase):
         dto: UserCreateDTO
     ) -> UserSchema:
         async with self.uow as uow:
-            ph = PasswordHasher()
-            hashed = ph.hash(dto.password)
 
             entity = User.create(
                 email=Email(dto.email),
-                hashed_password=HashedPassword(hashed),
+                hashed_password=HashedPassword(""),
                 status=dto.status
             )
+            entity.set_password(dto.password)
+            
             output = await uow.repository.create(entity)
             return user_entity_to_schema(output)

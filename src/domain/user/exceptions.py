@@ -1,10 +1,24 @@
 from uuid import UUID
+from typing import Optional
 
-class UserDoesNotExist(Exception):
+
+class UserDoesNotExistException(Exception):
     def __init__(self, user_id: UUID | None = None) -> None:
-        super().__init__(f"User with id {user_id} does not exist")
+        if user_id is not None:
+            self.msg = f"User with id {user_id} does not exist"
+        else:
+            self.msg = ""
+        super().__init__(self.msg)
         
-        self.user_id: UUID | None = user_id
+        self.user_id = user_id
 
-class UserAlreadyExists(Exception):
-    pass
+
+class UserWithEmailAlreadyExistsException(Exception):
+    def __init__(self, email: Optional[str] = None) -> None:
+        if email is not None:
+            self.msg = f"User with email {email} already exists"
+        else:
+            self.msg = ""
+        super().__init__(self.msg)
+        
+        self.email = email

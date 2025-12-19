@@ -5,12 +5,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.databases.postgresql.models import UserORM
+from infrastructure.databases.postgresql.exceptions import handle_unique_integrity_error
 
 from domain.user.repository import AbstractUserRepository
 from domain.user.entity import User
 from domain.value_objects.common import UserId
-from domain.user.exceptions import UserDoesNotExist, UserAlreadyExists
 from domain.user.repository import UserFilterDto
+from domain.user.exceptions import UserDoesNotExistException
 
 
 class PostgresUserRepository(AbstractUserRepository):
@@ -23,10 +24,8 @@ class PostgresUserRepository(AbstractUserRepository):
         self._session.add(user_orm)
         try:
             await self._session.flush()
-        except IntegrityError as exc:
-            if exc.orig and getattr(exc.orig, "pgcode", None) == "23505":
-                raise UserAlreadyExists(entity.email.value) from exc
-            raise   
+        except IntegrityError as e:
+            handle_unique_integrity_error(e, entity=entity)
         
         return user_orm.to_entity()
 
@@ -35,7 +34,7 @@ class PostgresUserRepository(AbstractUserRepository):
         user_orm = await self._session.get(UserORM, user_id.value)
 
         if user_orm is None:
-            raise UserDoesNotExist()
+            raise UserDoesNotExistException(user_id.value)
 
         return user_orm.to_entity()
 

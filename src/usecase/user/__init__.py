@@ -1,1 +1,1 @@
-from .create_user import CreateUserUsecase, CreateUserUsecaseImpl
+from .create_user import AbstractCreateUserUseCase

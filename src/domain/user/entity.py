@@ -1,6 +1,9 @@
 from typing import Optional
 from datetime import datetime
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+
 from utils.enums import UserStatus
 
 from domain.value_objects.common import UserId
@@ -9,6 +12,8 @@ from domain.value_objects.user import Email, HashedPassword
 
 class User:
     """User entity"""
+    _password_hasher = PasswordHasher()
+
     def __init__(
         self,
         *,
@@ -67,3 +72,12 @@ class User:
             status=status,
             created_at=datetime.now()
     )
+
+    def set_password(self, plain_password: str) -> None:
+        self._hashed_password = HashedPassword(self._password_hasher.hash(plain_password))
+
+    def check_password(self, plain_password: str) -> bool:
+        try:
+            return self._password_hasher.verify(self._hashed_password.value, plain_password)
+        except VerifyMismatchError:
+            return False

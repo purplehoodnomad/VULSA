@@ -5,12 +5,7 @@ from infrastructure.databases.postgresql.session import get_async_session
 from infrastructure.di.injection import build_user_uow
 from infrastructure.repositories.postgresql.uow import PostgreSQLUserUoW
 
-from usecase.user import (
-    CreateUserUsecase, CreateUserUsecaseImpl
-    # GetLinkByIdUseCase, GetLinkByIdUseCaseImpl,
-    # LinkRedirectUseCase, LinkRedirectUseCaseImpl,
-    # GetLinkListUsecase, GetLinkListUsecaseImpl
-)
+from usecase.user.create_user import AbstractCreateUserUseCase, CreateUserUseCasePostgreSQL
 
 
 def get_user_uow(session: AsyncSession = Depends(get_async_session)) -> PostgreSQLUserUoW:
@@ -18,9 +13,9 @@ def get_user_uow(session: AsyncSession = Depends(get_async_session)) -> PostgreS
 
 
 
-def get_user_create_usecase(session: AsyncSession = Depends(get_async_session)) -> CreateUserUsecase:
+def get_user_create_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractCreateUserUseCase:
     uow = get_user_uow(session)
-    return CreateUserUsecaseImpl(uow=uow)
+    return CreateUserUseCasePostgreSQL(uow=uow)
 
 
 # def get_link_get_by_id_usecase(session: AsyncSession = Depends(get_async_session)) -> GetLinkByIdUseCase:
