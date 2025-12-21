@@ -5,7 +5,9 @@ from fastapi.responses import JSONResponse
 
 from domain.user.exceptions import UserDoesNotExistException, UserWithEmailAlreadyExistsException
 
-from usecase.common.dto import UserCreateDTO
+from usecase.user.utils.dto import UserDTO, UserCreateDTO
+from .mappers import dto_to_schema
+
 from usecase.user import AbstractCreateUserUseCase
 from .dependencies import get_user_create_usecase
 from .schemas import UserSchema, UserCreateSchema
@@ -22,13 +24,14 @@ async def create_user(
     
     dto = UserCreateDTO(
         email=str(payload.email),
-        password=payload.password,
-        status=payload.status
+        password=payload.password
     )
     try:
-        schema = await usecase.execute(dto)
+        created_user_dto = await usecase.execute(dto)
     except UserWithEmailAlreadyExistsException as e:
         raise HTTPException(detail=e.msg, status_code=status.HTTP_409_CONFLICT)
+    
+    schema = dto_to_schema(created_user_dto)
 
     return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
 

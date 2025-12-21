@@ -10,7 +10,6 @@ from utils.enums import UserStatus
 class UserCreateSchema(BaseModel):
     email: EmailStr
     password: str
-    status: UserStatus = UserStatus.USER
 
 
 class UserSchema(BaseModel):
