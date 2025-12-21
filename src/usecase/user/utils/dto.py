@@ -36,3 +36,9 @@ class UserCreateDTO:
                 hashed_password=HashedPassword(""),
                 status=UserStatus.USER
             )
+
+@dataclass(slots=True)
+class UserDeleteDTO:
+    user_id: UUID
+    email: str
+    password: str

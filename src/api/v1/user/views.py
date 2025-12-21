@@ -1,16 +1,17 @@
 from uuid import UUID
 
 from fastapi import status, APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from domain.user.exceptions import UserDoesNotExistException, UserWithEmailAlreadyExistsException
+from domain.value_objects.common import UserId
 
-from usecase.user.utils.dto import UserDTO, UserCreateDTO
+from usecase.user.utils.dto import UserCreateDTO, UserDeleteDTO
+from usecase.user import AbstractCreateUserUseCase, AbstractGetUserUseCase, AbstractDeleteUserUseCase
+
+from .dependencies import get_user_create_usecase, get_user_get_usecase, get_user_delete_usecase
+from .schemas import UserSchema, UserCreateSchema, UserDeleteSchema
 from .mappers import dto_to_schema
-
-from usecase.user import AbstractCreateUserUseCase
-from .dependencies import get_user_create_usecase
-from .schemas import UserSchema, UserCreateSchema
 
 
 router = APIRouter(prefix="/users")
@@ -24,7 +25,7 @@ async def create_user(
     
     dto = UserCreateDTO(
         email=str(payload.email),
-        password=payload.password
+        password=payload.password,
     )
     try:
         created_user_dto = await usecase.execute(dto)
@@ -36,20 +37,35 @@ async def create_user(
     return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
 
 
-# @router.get("/{user_id}", response_model=UserSchema)
-# async def get_user(
-#     user_id: UUID,
-#     usecase: AbstractGetUserUsecase = Depends(get_user_get_usecase),
-# ) -> JSONResponse:
+@router.get("/{user_id}", response_model=UserSchema)
+async def get_user(
+    user_id: UUID,
+    usecase: AbstractGetUserUseCase = Depends(get_user_get_usecase),
+) -> JSONResponse:
+    try:
+        user = await usecase.execute(UserId(user_id))
+    except UserDoesNotExistException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
     
-#     dto = UserCreateDTO(
-#         email=str(payload.email),
-#         password=payload.password,
-#         status=payload.status
-#     )
-#     try:
-#         schema = await usecase.execute(dto)
-#     except UserWithEmailAlreadyExistsException as e:
-#         raise HTTPException(detail=e.msg, status_code=status.HTTP_409_CONFLICT)
+    schema = dto_to_schema(user)
 
-#     return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
+    return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_200_OK)
+
+
+@router.delete("/{user_id}", response_model=UserSchema)
+async def delete_user(
+    user_id: UUID,
+    payload: UserDeleteSchema,
+    usecase: AbstractDeleteUserUseCase = Depends(get_user_delete_usecase),
+) -> Response:
+    dto = UserDeleteDTO(
+        user_id=user_id,
+        email=payload.email,
+        password=payload.password
+    )
+    try:
+        await usecase.execute(dto)
+    except UserDoesNotExistException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
+    
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -25,7 +25,7 @@ class CreateUserUseCasePostgreSQL(AbstractCreateUserUseCase):
         async with self.uow as uow:
 
             entity = dto.to_entity()
-            entity.set_password(dto.password)
+            entity.change_password(dto.password)
             
             created_user = await uow.repository.create(entity) # type: ignore
             return UserDTO.from_entity(created_user)

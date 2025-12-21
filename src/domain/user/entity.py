@@ -73,7 +73,7 @@ class User:
             created_at=datetime.now()
     )
 
-    def set_password(self, plain_password: str) -> None:
+    def change_password(self, plain_password: str) -> None:
         self._hashed_password = HashedPassword(self._password_hasher.hash(plain_password))
 
     def check_password(self, plain_password: str) -> bool:

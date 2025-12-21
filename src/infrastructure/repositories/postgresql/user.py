@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +37,11 @@ class PostgresUserRepository(AbstractUserRepository):
             raise UserDoesNotExistException(user_id.value)
 
         return user_orm.to_entity()
+    
+
+    async def delete(self, user_id: UserId) -> None:
+        stmt = delete(UserORM).where(UserORM.id == user_id.value)
+        await self._session.execute(stmt)
 
 
     async def list(self,
