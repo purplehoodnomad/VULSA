@@ -10,8 +10,9 @@ from infrastructure.databases.postgresql.exceptions import handle_unique_integri
 from domain.user.repository import AbstractUserRepository
 from domain.user.entity import User
 from domain.value_objects.common import UserId
+from domain.value_objects.user import Email
 from domain.user.repository import UserFilterDto
-from domain.user.exceptions import UserDoesNotExistException
+from domain.user.exceptions import UserDoesNotExistException, EmailDoesNotExistException
 
 
 class PostgresUserRepository(AbstractUserRepository):
@@ -31,12 +32,26 @@ class PostgresUserRepository(AbstractUserRepository):
 
 
     async def get(self, user_id: UserId) -> User:
+        """Raises c if no id found"""
         user_orm = await self._session.get(UserORM, user_id.value)
 
         if user_orm is None:
             raise UserDoesNotExistException(user_id.value)
 
         return user_orm.to_entity()
+    
+
+    async def get_by_email(self, email: Email) -> User:
+        """Raises EmailDoesNotExistException if no user with email found"""
+        stmt = select(UserORM).where(UserORM.email == email.value)
+        result = await self._session.execute(stmt)
+
+        scalar = result.scalar_one_or_none()
+        if scalar is None:
+            raise EmailDoesNotExistException(email.value)
+        
+        return scalar.to_entity()
+
     
 
     async def delete(self, user_id: UserId) -> None:

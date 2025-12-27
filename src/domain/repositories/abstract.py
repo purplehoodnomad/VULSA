@@ -10,17 +10,18 @@ TFilter = TypeVar("TFilter")
 
 
 class AbstractRepository(Generic[TEntity, TId, TFilter], ABC):
-    @abstractmethod
-    async def get(self, entity_id: TId) -> TEntity:
-        raise NotImplementedError
+    ...
+    # @abstractmethod
+    # async def get(self, entity_id: TId) -> TEntity:
+    #     raise NotImplementedError
 
-    @abstractmethod
-    async def list(self, filter: TFilter) -> list[TEntity]:
-        raise NotImplementedError
+    # @abstractmethod
+    # async def list(self, filter: TFilter) -> list[TEntity]:
+    #     raise NotImplementedError
 
-    @abstractmethod
-    async def create(self, entity: TEntity) -> TEntity:
-        raise NotImplementedError
+    # @abstractmethod
+    # async def create(self, entity: TEntity) -> TEntity:
+    #     raise NotImplementedError
 
     # @abstractmethod
     # async def update(self, entity_id: TId, dto: TUpdateDTO, wipe: bool) -> TEntity:

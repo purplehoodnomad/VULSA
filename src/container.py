@@ -2,7 +2,7 @@ from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Singleton, Factory
 
 from infrastructure.databases.postgresql.session_manager import DatabaseSessionManager
-from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW, PostgreSQLUserUoW
+from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW, PostgreSQLUserUoW, PostgresAuthUoW
 
 
 class Container(DeclarativeContainer):
@@ -10,3 +10,4 @@ class Container(DeclarativeContainer):
 
     link_uow_factory = Factory(PostgreSQLLinkUoW)
     user_uow_factory = Factory(PostgreSQLUserUoW)
+    auth_uow_factory = Factory(PostgresAuthUoW)

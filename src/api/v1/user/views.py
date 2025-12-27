@@ -2,19 +2,28 @@ from uuid import UUID
 
 from fastapi import status, APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse, Response
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from domain.user.exceptions import UserDoesNotExistException, UserWithEmailAlreadyExistsException
 from domain.value_objects.common import UserId
+from domain.value_objects.token import Token as TokenVO
 
 from usecase.user.utils.dto import UserCreateDTO, UserDeleteDTO
-from usecase.user import AbstractCreateUserUseCase, AbstractGetUserUseCase, AbstractDeleteUserUseCase
+from usecase.user import (
+    AbstractCreateUserUseCase,
+    AbstractGetUserUseCase,
+    AbstractDeleteUserUseCase,
+    AbstractMeUseCase
+)
 
-from .dependencies import get_user_create_usecase, get_user_get_usecase, get_user_delete_usecase
+from .dependencies import get_user_create_usecase, get_user_get_usecase, get_user_delete_usecase, get_me_usecase
 from .schemas import UserSchema, UserCreateSchema, UserDeleteSchema
 from .mappers import dto_to_schema
 
 
 router = APIRouter(prefix="/users")
+
+security_scheme = HTTPBearer(scheme_name="Bearer")
 
 
 @router.post("", response_model=UserSchema)
@@ -69,3 +78,19 @@ async def delete_user(
         raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
     
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/me", response_model=UserSchema)
+async def get_me(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    usecase: AbstractMeUseCase = Depends(get_me_usecase)
+) -> JSONResponse:
+    token_value = credentials.credentials
+    try:    
+        user = await usecase.execute(TokenVO(token_value))
+    except UserDoesNotExistException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
+
+    schema = dto_to_schema(user)
+
+    return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_200_OK)

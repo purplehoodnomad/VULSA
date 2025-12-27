@@ -18,7 +18,8 @@ from domain.value_objects.user import Email, HashedPassword
 class UserORM(Base):
     __tablename__ = "user"
 
-    links: Mapped[list["LinkORM"]] = relationship(back_populates="user") # type: ignore
+    links: Mapped[list["LinkORM"]] = relationship(back_populates="user", cascade="all, delete, delete-orphan") # type: ignore
+    tokens: Mapped[list["TokenORM"]] = relationship(back_populates="user", cascade="all, delete, delete-orphan") # type: ignore
 
     id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),

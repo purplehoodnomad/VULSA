@@ -71,7 +71,7 @@ class User:
             hashed_password=hashed_password,
             status=status,
             created_at=datetime.now()
-    )
+        )
 
     def change_password(self, plain_password: str) -> None:
         self._hashed_password = HashedPassword(self._password_hasher.hash(plain_password))
