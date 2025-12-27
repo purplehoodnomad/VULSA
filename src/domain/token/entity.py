@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from domain.value_objects.common import UserId
 from domain.value_objects.token import Token as TokenVO, TokenId
@@ -81,7 +81,7 @@ class Token:
     
     def refresh(self) -> None:
         "Refreshes access token"
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         if now >= self._refresh_token_expires_at:
             raise RefreshTokenExpiredException(self.refresh_token.value)
         
@@ -90,12 +90,12 @@ class Token:
     
     
     def drop(self) -> None:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         self._refresh_token_expires_at=now
 
 
     def is_access_token_valid(self) -> bool:
-        return datetime.now() < self.access_token_expires_at
+        return datetime.now(timezone.utc) < self.access_token_expires_at
 
     def is_refresh_token_valid(self) -> bool:
-        return datetime.now() < self.refresh_token_expires_at
+        return datetime.now(timezone.utc) < self.refresh_token_expires_at

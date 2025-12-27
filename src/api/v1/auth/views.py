@@ -2,7 +2,7 @@ from fastapi import status, APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from domain.token.exceptions import RefreshTokenExpiredException
+from domain.token.exceptions import RefreshTokenExpiredException, TokenDoesNotExistException
 from domain.user.exceptions import EmailDoesNotExistException
 from domain.value_objects.token import Token as TokenVO
 
@@ -18,16 +18,18 @@ router = APIRouter(prefix="/auth")
 
 security = HTTPBearer(scheme_name="refresh")
 
-@router.get("/refresh", response_model=TokenSchema) # swap to post
+@router.post("/refresh", response_model=TokenSchema)
 async def refresh_access_token(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    refresh_token: str,
     usecase: AbstractRefreshAccessTokenUseCase = Depends(get_refresh_access_token_usecase)
 ) -> JSONResponse:
-    token_value = credentials.credentials
-    try:    
-        new_token = await usecase.execute(TokenVO(token_value))
+    try:
+        new_token = await usecase.execute(TokenVO(refresh_token))
     except RefreshTokenExpiredException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_403_FORBIDDEN)
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_401_UNAUTHORIZED)
+    except TokenDoesNotExistException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_401_UNAUTHORIZED)
+
 
     schema = dto_to_schema(new_token)
 

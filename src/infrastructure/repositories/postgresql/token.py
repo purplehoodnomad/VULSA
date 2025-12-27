@@ -48,7 +48,7 @@ class PostgresTokenRepository(AbstractTokenRepository):
 
 
     async def get_latest_for_user(self, user_id: UserId) -> Token | None:
-        stmt = select(TokenORM).where(TokenORM.user_id == user_id.value).order_by(TokenORM.refresh_token_expires_at).limit(1)
+        stmt = select(TokenORM).where(TokenORM.user_id == user_id.value).order_by(TokenORM.refresh_token_expires_at.desc()).limit(1)
         result = await self._session.execute(stmt)
         
         token_orm = result.scalar_one_or_none()

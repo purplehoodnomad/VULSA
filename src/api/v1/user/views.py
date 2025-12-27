@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from domain.user.exceptions import UserDoesNotExistException, UserWithEmailAlreadyExistsException
+from domain.token.exceptions import TokenDoesNotExistException
 from domain.value_objects.common import UserId
 from domain.value_objects.token import Token as TokenVO
 
@@ -46,6 +47,22 @@ async def create_user(
     return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
 
 
+@router.get("/me", response_model=UserSchema)
+async def get_me(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    usecase: AbstractMeUseCase = Depends(get_me_usecase)
+) -> JSONResponse:
+    token_value = credentials.credentials
+    try:    
+        user = await usecase.execute(TokenVO(token_value))
+    except TokenDoesNotExistException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_401_UNAUTHORIZED)
+
+    schema = dto_to_schema(user)
+
+    return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_200_OK)
+
+
 @router.get("/{user_id}", response_model=UserSchema)
 async def get_user(
     user_id: UUID,
@@ -78,19 +95,3 @@ async def delete_user(
         raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
     
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@router.get("/me", response_model=UserSchema)
-async def get_me(
-    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
-    usecase: AbstractMeUseCase = Depends(get_me_usecase)
-) -> JSONResponse:
-    token_value = credentials.credentials
-    try:    
-        user = await usecase.execute(TokenVO(token_value))
-    except UserDoesNotExistException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
-
-    schema = dto_to_schema(user)
-
-    return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_200_OK)
