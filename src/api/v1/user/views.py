@@ -2,7 +2,9 @@ from uuid import UUID
 
 from fastapi import status, APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse, Response
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials
+
+from api.v1.dependencies import get_authentificated_user_id
 
 from domain.user.exceptions import UserDoesNotExistException, UserWithEmailAlreadyExistsException
 from domain.token.exceptions import TokenDoesNotExistException
@@ -23,8 +25,6 @@ from .mappers import dto_to_schema
 
 
 router = APIRouter(prefix="/users")
-
-security_scheme = HTTPBearer(scheme_name="Bearer")
 
 
 @router.post("", response_model=UserSchema)
@@ -49,17 +49,12 @@ async def create_user(
 
 @router.get("/me", response_model=UserSchema)
 async def get_me(
-    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
-    usecase: AbstractMeUseCase = Depends(get_me_usecase)
+    user_id: UUID = Depends(get_authentificated_user_id),
+    usecase: AbstractGetUserUseCase = Depends(get_user_get_usecase)
 ) -> JSONResponse:
-    token_value = credentials.credentials
-    try:    
-        user = await usecase.execute(TokenVO(token_value))
-    except TokenDoesNotExistException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_401_UNAUTHORIZED)
-
+    user = await usecase.execute(UserId(user_id))
     schema = dto_to_schema(user)
-
+    
     return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
 

@@ -9,8 +9,11 @@ from infrastructure.databases.postgresql.exceptions import handle_unique_integri
 
 from domain.user.repository import AbstractUserRepository
 from domain.user.entity import User
+
 from domain.value_objects.common import UserId
 from domain.value_objects.user import Email
+from domain.value_objects.token import Token as TokenVO
+
 from domain.user.repository import UserFilterDto
 from domain.user.exceptions import UserDoesNotExistException, EmailDoesNotExistException
 
@@ -73,3 +76,7 @@ class PostgresUserRepository(AbstractUserRepository):
         scalars = result.scalars().all()
 
         return [scalar.to_entity() for scalar in scalars]
+    
+
+    async def find_user_by_access_token(self, access_token: TokenVO) -> User:
+        ...

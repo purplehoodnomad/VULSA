@@ -3,6 +3,9 @@ from uuid import UUID
 from fastapi import status, APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from api.v1.dependencies import get_authentificated_user_id
+
+from domain.value_objects.common import UserId
 from domain.link.exceptions import LinkDoesNotExist, ShortLinkDoesNotExist #, ShortLinkAlreadyExists
 
 from usecase.link.dto import LinkCreateDTO
@@ -28,11 +31,12 @@ router = APIRouter(prefix="/links")
 @router.post("", response_model=LinkSchema)
 async def create_short_link(
     payload: LinkCreateSchema,
+    user_id: UUID = Depends(get_authentificated_user_id),
     usecase: CreateLinkUsecase = Depends(get_link_create_usecase),
 ) -> JSONResponse:
     
     dto = LinkCreateDTO(
-        user_id=payload.user_id,
+        user_id=user_id,
         long=str(payload.long),
         short = payload.short,
         expires_at=payload.expires_at,
@@ -43,101 +47,48 @@ async def create_short_link(
     return JSONResponse(content=link.model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
 
 
-@router.get("/details/{url_id}", response_model=LinkSchema)
-async def get_link_data(
-    link_id: UUID,
-    usecase: GetLinkByIdUseCase = Depends(get_link_get_by_id_usecase)
-) -> JSONResponse:
-    try:
-        link = await usecase.execute(link_id)
-    except LinkDoesNotExist:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    return JSONResponse(content=link.model_dump(mode="json"), status_code=status.HTTP_200_OK)
-
-
-@router.get("/{suffix}")
-async def process_redirect(
-    suffix: str,
-    usecase: LinkRedirectUseCase = Depends(get_link_redirect_usecase)
- ) -> RedirectResponse:
-    try:
-        link = await usecase.execute(suffix)
-    except LinkDoesNotExist:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-
-    return RedirectResponse(url=link.long, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
-
-
-@router.get("", response_model=LinkListSchema)
-async def get_links_list(
-    params: LinkListQueryParams = Depends(),
-    usecase: GetLinkListUsecase = Depends(get_link_list_usecase)
-) -> JSONResponse:
-    
-    links = await usecase.execute(
-        offset=params.offset,
-        limit=params.limit,
-        user=params.user,
-        older_than=params.older_than,
-        newer_than=params.newer_than,
-        active_status=params.active_status,
-        has_expiration_date=params.has_expiration_date,
-        has_redirect_limit=params.has_redirect_limit
-    )
-
-    return JSONResponse(content=links.model_dump(mode="json"), status_code=status.HTTP_200_OK)
-
-
-
-# @router.delete("/details/{url_id}")
-# def delete_link(url_id: UUID, repo: AbstractLinkRepository = Depends(get_link_repo),) -> JSONResponse:
+# @router.get("/details/{url_id}", response_model=LinkSchema)
+# async def get_link_data(
+#     link_id: UUID,
+#     usecase: GetLinkByIdUseCase = Depends(get_link_get_by_id_usecase)
+# ) -> JSONResponse:
 #     try:
-#         repo.delete(url_id)
-#         return JSONResponse(content="", status_code=status.HTTP_204_NO_CONTENT)
-    
+#         link = await usecase.execute(link_id)
 #     except LinkDoesNotExist:
-#         return JSONResponse(content="", status_code=status.HTTP_404_NOT_FOUND)
-    
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-# @router.put("/details/{url_id}", response_model=LinkSchema)
-# def remake_link(url_id: UUID, payload: LinkUpdateSchema, repo: AbstractLinkRepository = Depends(get_link_repo),) -> JSONResponse:
-#     dto = LinkUpdateDTO(owner_id=payload.owner_id, expires_at=payload.expires_at, redirect_limit=payload.redirect_limit)
+#     return JSONResponse(content=link.model_dump(mode="json"), status_code=status.HTTP_200_OK)
+
+
+# @router.get("/{suffix}")
+# async def process_redirect(
+#     suffix: str,
+#     usecase: LinkRedirectUseCase = Depends(get_link_redirect_usecase)
+#  ) -> RedirectResponse:
 #     try:
-#         link = repo.update(url_id, dto, wipe=True)
+#         link = await usecase.execute(suffix)
 #     except LinkDoesNotExist:
-#         return JSONResponse(content="", status_code=status.HTTP_404_NOT_FOUND)
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-#     data = LinkSchema(
-#         owner_id=link.owner_id,
-#         url_id=link.url_id,
-#         base_url=link.base_url,
-#         suffix=link.suffix,
-#         expires_at=link.expires_at,
-#         redirect_limit=link.redirect_limit,
-#         times_used=link.times_used,
-#         is_active=link.is_active
+#     return RedirectResponse(url=link.long, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+
+# @router.get("", response_model=LinkListSchema)
+# async def get_links_list(
+#     params: LinkListQueryParams = Depends(),
+#     usecase: GetLinkListUsecase = Depends(get_link_list_usecase)
+# ) -> JSONResponse:
+    
+#     links = await usecase.execute(
+#         offset=params.offset,
+#         limit=params.limit,
+#         user=params.user,
+#         older_than=params.older_than,
+#         newer_than=params.newer_than,
+#         active_status=params.active_status,
+#         has_expiration_date=params.has_expiration_date,
+#         has_redirect_limit=params.has_redirect_limit
 #     )
-#     return JSONResponse(content=data.model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
-
-
-# @router.patch("/details/{url_id}")
-# def change_link(url_id: UUID, payload: LinkUpdateSchema, repo: AbstractLinkRepository = Depends(get_link_repo),) -> JSONResponse:
-#     dto = LinkUpdateDTO(owner_id=payload.owner_id, expires_at=payload.expires_at, redirect_limit=payload.redirect_limit)
-#     try:
-#         link = repo.update(url_id, dto, wipe=False)
-#     except LinkDoesNotExist:
-#         return JSONResponse(content="", status_code=status.HTTP_404_NOT_FOUND)
-
-#     data = LinkSchema(
-#         owner_id=link.owner_id,
-#         url_id=link.url_id,
-#         base_url=link.base_url,
-#         suffix=link.suffix,
-#         expires_at=link.expires_at,
-#         redirect_limit=link.redirect_limit,
-#         times_used=link.times_used,
-#         is_active=link.is_active
-#     )
-#     return JSONResponse(content=data.model_dump(mode="json"), status_code=status.HTTP_200_OK)
+#     return JSONResponse(content=links.model_dump(mode="json"), status_code=status.HTTP_200_OK)
