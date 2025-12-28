@@ -1,10 +1,11 @@
 from uuid import UUID
 
 from fastapi import status, APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 
 from api.v1.dependencies import get_authentificated_user_id
 
+from domain.user.exceptions import LinkOwnershipViolation
 from domain.link.exceptions import (
     ShortLinkDoesNotExistException,
     UnprocessableShortLinkException,
@@ -12,14 +13,18 @@ from domain.link.exceptions import (
 )
 
 from usecase.link.utils.dto import LinkDTO, LinkCreateDTO, LinkFilterDto
-from usecase.link import AbstractCreateLinkUseCase, AbstractLinkRedirectUseCase, AbstractGetUserLinksUseCase
+from usecase.link import (
+    AbstractCreateLinkUseCase,
+    AbstractLinkRedirectUseCase,
+    AbstractGetUserLinksUseCase,
+    AbstractDeleteShortUseCase
+)
     
 from .dependencies import (
     get_link_create_usecase,
     get_link_redirect_usecase,
-    get_get_user_links_usecase
-    # get_link_get_by_id_usecase,
-    
+    get_get_user_links_usecase,
+    get_delete_short_usecase
 )
 
 from .schemas import LinkSchema, LinkCreateSchema, LinkListSchema, LinkListQueryParams
@@ -93,6 +98,22 @@ async def get_links_list(
     return JSONResponse(content=LinkListSchema(data=links_schemas).model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
 
+@router.delete("", response_model=None)
+async def delete_short_link(
+    short: str,
+    user_id: UUID = Depends(get_authentificated_user_id),
+    usecase: AbstractDeleteShortUseCase = Depends(get_delete_short_usecase)
+) -> Response:
+    
+    try:
+        await usecase.execute(user_id=user_id, short=short)
+    except ShortLinkDoesNotExistException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
+    except LinkOwnershipViolation as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_403_FORBIDDEN)
+
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # @router.get("/details/{url_id}", response_model=LinkSchema)

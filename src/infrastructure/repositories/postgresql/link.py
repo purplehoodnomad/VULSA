@@ -2,7 +2,7 @@ from uuid import UUID
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -106,6 +106,11 @@ class PostgresLinkRepository(AbstractLinkRepository):
             return []
 
         return [scalar.to_entity() for scalar in scalars]
+
+
+    async def delete(self, entity: Link) -> None:
+        stmt = delete(LinkORM).where(LinkORM.id == entity.link_id.value)
+        await self._session.execute(stmt)
 
 
     # async def get(self, link_id: LinkId) -> Link:

@@ -8,9 +8,11 @@ class PostgresLinkUoW:
         self._session: AsyncSession = session
 
         self.repository: PostgresLinkRepository | None = None
+        self.user_repository: PostgresUserRepository | None = None
 
     async def __aenter__(self):
         self.repository = PostgresLinkRepository(self._session)
+        self.user_repository = PostgresUserRepository(self._session)
         return self
 
     async def __aexit__(self, exc_type: Exception | None, exc_val, traceback):

@@ -8,6 +8,7 @@ from infrastructure.repositories.postgresql.uow import PostgresLinkUoW
 from usecase.link.create_link import AbstractCreateLinkUseCase, PostgresCreateLinkUseCase
 from usecase.link.redirect import AbstractLinkRedirectUseCase, PostgresLinkRedirectUseCase
 from usecase.link.get_user_links import AbstractGetUserLinksUseCase, PostgresGetUserLinksUseCase
+from usecase.link.delete_short import AbstractDeleteShortUseCase, PostgresDeleteShortUseCase
 
 
 def get_link_uow(session: AsyncSession = Depends(get_async_session)) -> PostgresLinkUoW:
@@ -26,6 +27,10 @@ def get_link_redirect_usecase(session: AsyncSession = Depends(get_async_session)
 def get_get_user_links_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractGetUserLinksUseCase:
     uow = get_link_uow(session)
     return PostgresGetUserLinksUseCase(uow=uow)
+
+def get_delete_short_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractDeleteShortUseCase:
+    uow = get_link_uow(session)
+    return PostgresDeleteShortUseCase(uow=uow)
 
 # def get_link_get_by_id_usecase(session: AsyncSession = Depends(get_async_session)) -> GetLinkByIdUseCase:
 #     uow = get_link_uow(session)

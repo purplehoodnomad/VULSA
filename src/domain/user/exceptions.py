@@ -44,3 +44,15 @@ class PasswordMismatchException(Exception):
         super().__init__(self.msg)
         
         self.user_id = user_id
+
+
+class LinkOwnershipViolation(Exception):
+    def __init__(self, *, short: str, user_id: UUID) -> None:
+        if user_id is not None:
+            self.msg = f"User {user_id} does not own {short}"
+        else:
+            self.msg = ""
+        super().__init__(self.msg)
+        
+        self.user_id = user_id
+        self.short = short
