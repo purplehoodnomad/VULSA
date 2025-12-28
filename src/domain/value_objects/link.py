@@ -28,15 +28,15 @@ class Short:
     value: str
 
     @staticmethod
-    def generate(len: int = MAX_SHORT_LINK_LENGTH) -> "Short":
+    def generate(length: int = MAX_SHORT_LINK_LENGTH) -> "Short":
         """
         Generates short link suffix of max available size by default.
         """
-        size = MAX_SHORT_LINK_LENGTH if len > MAX_SHORT_LINK_LENGTH or len < MIN_SHORT_LINK_LENGTH or len <= 0 else len
+        size = MAX_SHORT_LINK_LENGTH if length > MAX_SHORT_LINK_LENGTH or length < MIN_SHORT_LINK_LENGTH or length <= 0 else length
         return Short(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(size)).lower())
 
     def __post_init__(self):
-        if not (MIN_SHORT_LINK_LENGTH <= len(self.value) <= MAX_SHORT_LINK_LENGTH):
+        if len(self.value) < MIN_SHORT_LINK_LENGTH or len(self.value) > MAX_SHORT_LINK_LENGTH:
             raise ValueError(f"Invalid short link length: {self.value}")
         
         if not fullmatch(r'^[a-z0-9]+$', self.value):

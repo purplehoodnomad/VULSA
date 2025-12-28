@@ -4,23 +4,19 @@ from typing import Generic, TypeVar
 
 TEntity = TypeVar("TEntity")
 TId = TypeVar("TId")
-TFilter = TypeVar("TFilter")
-# TCreateDTO = TypeVar("TCreateDTO")
-# TUpdateDTO = TypeVar("TUpdateDTO")
 
 
-class AbstractRepository(Generic[TEntity, TId, TFilter], ABC):
-    ...
+class AbstractRepository(Generic[TEntity, TId], ABC):
+    @abstractmethod
+    async def create(self, entity: TEntity) -> TEntity:
+        raise NotImplementedError
+
     # @abstractmethod
     # async def get(self, entity_id: TId) -> TEntity:
     #     raise NotImplementedError
 
     # @abstractmethod
     # async def list(self, filter: TFilter) -> list[TEntity]:
-    #     raise NotImplementedError
-
-    # @abstractmethod
-    # async def create(self, entity: TEntity) -> TEntity:
     #     raise NotImplementedError
 
     # @abstractmethod

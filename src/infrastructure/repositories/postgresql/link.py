@@ -1,17 +1,19 @@
 from uuid import UUID
+from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from infrastructure.databases.postgresql.models import LinkORM
+from infrastructure.databases.postgresql.exceptions import handle_unique_integrity_error
 
 from domain.link.repository import AbstractLinkRepository
 from domain.link.entity import Link
-from domain.value_objects.common import LinkId
+from domain.value_objects.common import LinkId, UserId
 from domain.value_objects.link import Short
-from domain.link.repository import LinkFilterDto
-from domain.link.exceptions import LinkDoesNotExist
+from domain.link.exceptions import ShortLinkDoesNotExistException
 
 
 class PostgresLinkRepository(AbstractLinkRepository):
@@ -22,17 +24,11 @@ class PostgresLinkRepository(AbstractLinkRepository):
         link_orm = LinkORM.from_entity(entity)
 
         self._session.add(link_orm)
-        await self._session.flush()
+        try:
+            await self._session.flush()
+        except IntegrityError as e:
+            handle_unique_integrity_error(e, entity=entity)
         
-        return link_orm.to_entity()
-
-
-    async def get(self, link_id: LinkId) -> Link:
-        link_orm = await self._session.get(LinkORM, link_id.value)
-
-        if link_orm is None:
-            raise LinkDoesNotExist()
-
         return link_orm.to_entity()
 
 
@@ -42,37 +38,80 @@ class PostgresLinkRepository(AbstractLinkRepository):
         link_orm = result.scalar_one_or_none()
 
         if link_orm is None:
-            raise LinkDoesNotExist()
+            raise ShortLinkDoesNotExistException(short=short.value)
         
         return link_orm.to_entity()
-    
+
+
+    async def update(self, entity: Link) -> Link:
+        link_orm = await self._session.get(LinkORM, entity.link_id.value)
+        if link_orm is None:
+            raise ShortLinkDoesNotExistException(link_id=entity.link_id.value)
+        
+        link_orm.user_id = entity.user_id.value
+        link_orm.long = entity.long.value
+        link_orm.short = entity.short.value
+        link_orm.is_active = entity.is_active
+        link_orm.redirect_limit = entity.redirect_limit.value if entity.redirect_limit is not None else None
+        link_orm.expires_at = entity.expires_at
+        link_orm.times_used = entity.times_used
+
+        try:
+            await self._session.flush()
+        except IntegrityError as e:
+            handle_unique_integrity_error(e, entity=entity)
+        
+        return link_orm.to_entity()
+
+
     async def list(self,
-        filter: LinkFilterDto
+        *,
+        offset: int,
+        limit: int,
+        user_id: Optional[UserId] = None,
+        older_than: Optional[datetime] = None,
+        newer_than: Optional[datetime] = None,
+        active_status: Optional[bool] = None,
+        has_expiration_date: Optional[bool] = None,
+        has_redirect_limit: Optional[bool] = None,
     ) -> list[Link]:
         expression = []
 
-        if filter.user is not None:
-            expression.append(LinkORM.user_id == filter.user)
-        if filter.older_than is not None:
-            expression.append(LinkORM.created_at < filter.older_than)
-        if filter.newer_than is not None:
-            expression.append(LinkORM.created_at > filter.newer_than)
-        if filter.active_status is not None:
-            expression.append(LinkORM.is_active == filter.active_status)
-        if filter.has_expiration_date is not None:
-            if filter.has_expiration_date:
+
+        if user_id is not None:
+            expression.append(LinkORM.user_id == user_id.value)
+        if older_than is not None:
+            expression.append(LinkORM.created_at < older_than)
+        if newer_than is not None:
+            expression.append(LinkORM.created_at > newer_than)
+        if active_status is not None:
+            expression.append(LinkORM.is_active == active_status)
+        if has_expiration_date is not None:
+            if has_expiration_date:
                 expression.append(LinkORM.expires_at.isnot(None))
             else:
                 expression.append(LinkORM.expires_at.is_(None))
-        if filter.has_redirect_limit is not None:
-            if filter.has_redirect_limit:
+        if has_redirect_limit is not None:
+            if has_redirect_limit:
                 expression.append(LinkORM.redirect_limit.isnot(None))
             else:
                 expression.append(LinkORM.redirect_limit.is_(None))
 
-        query = select(LinkORM).where(*expression).offset(filter.offset).limit(filter.limit)
+        query = select(LinkORM).where(*expression).offset(offset).limit(limit)
 
         result = await self._session.execute(query)
         scalars = result.scalars().all()
 
+        if not scalars:
+            return []
+
         return [scalar.to_entity() for scalar in scalars]
+
+
+    # async def get(self, link_id: LinkId) -> Link:
+    #     link_orm = await self._session.get(LinkORM, link_id.value)
+
+    #     if link_orm is None:
+    #         raise LinkDoesNotExist()
+
+    #     return link_orm.to_entity()

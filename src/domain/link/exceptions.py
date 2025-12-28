@@ -1,19 +1,40 @@
 from uuid import UUID
+from typing import Optional
 
-class ShortLinkDoesNotExist(Exception):
-    def __init__(self, short: str | None = None) -> None:
-        super().__init__(f"Link with short={short} does not exist")
+
+class ShortLinkAlreadyExistsException(Exception):
+    def __init__(self, short: Optional[str] = None) -> None:
+        if short is not None:
+            self.msg = f"Short link {short} already exists"
+        else:
+            self.msg = ""
+        super().__init__(self.msg)
         
-        self.short_url: str | None = short
+        self.short = short
 
-class LinkDoesNotExist(Exception):
-    def __init__(self, url_id: UUID | None = None) -> None:
-        super().__init__(f"Link with url_id={url_id} does not exist")
+class ShortLinkDoesNotExistException(Exception):
+    def __init__(self,
+        *,
+        short: Optional[str] = None,
+        link_id: Optional[UUID] = None
+    ) -> None:
+        if short is not None:
+            self.msg = f"Short link {short} does not exist"
+        if link_id is not None:
+            self.msg = f"Short link with id {link_id} does not exist"   
+        else:
+            self.msg = ""
+        super().__init__(self.msg)
         
-        self.url_id: UUID | None = url_id
+        self.short = short
+        self.link_id = link_id
 
-class ShortLinkAlreadyExists(Exception):
-    def __init__(self, short: str) -> None:
-        super().__init__(f"Link with short={short} already exists")
-
-        self.short_url: str = short
+class UnprocessableShortLinkException(Exception):
+    def __init__(self, short: Optional[str] = None) -> None:
+        if short is not None:
+            self.msg = f"Short link {short} is expired"
+        else:
+            self.msg = ""
+        super().__init__(self.msg)
+        
+        self.short = short

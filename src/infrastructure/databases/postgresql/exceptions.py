@@ -1,6 +1,7 @@
 from typing import Any
 from sqlalchemy.exc import IntegrityError
 from domain.user.exceptions import UserWithEmailAlreadyExistsException
+from domain.link.exceptions import ShortLinkAlreadyExistsException
 
 
 PG_UNIQUE_VIOLATION = "23505"
@@ -8,6 +9,7 @@ PG_UNIQUE_VIOLATION = "23505"
 
 _UNIQUE_CONSTRAINT_MAP = {
     "ix_user_email": {"attr": "email", "error": UserWithEmailAlreadyExistsException},
+    "ix_link_short": {"attr": "short", "error": ShortLinkAlreadyExistsException}
 }
 
 def handle_unique_integrity_error(

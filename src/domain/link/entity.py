@@ -1,5 +1,7 @@
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
+
+from domain.link.exceptions import UnprocessableShortLinkException
 
 from domain.value_objects.common import (
     LinkId,
@@ -102,3 +104,15 @@ class Link:
             times_used=0,
             is_active=True
     )
+
+
+    def consume_redirect(self) -> None:
+        """Raises UnprocessableShortLinkException if link doesn't meet redirect criteria"""
+        if self.expires_at is not None and self.expires_at < datetime.now(timezone.utc):
+            raise UnprocessableShortLinkException(self.short.value)
+        if self.redirect_limit is not None and self.redirect_limit.value <= self.times_used:
+            raise UnprocessableShortLinkException(self.short.value)
+        if not self.is_active:
+            raise UnprocessableShortLinkException(self.short.value)
+        
+        self._times_used += 1

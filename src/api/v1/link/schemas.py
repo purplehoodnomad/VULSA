@@ -7,20 +7,14 @@ from pydantic import BaseModel, HttpUrl, Field, BeforeValidator
 from config.config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
 
 
-def validate_short_link(value: Optional[str]) -> str | None:
-    return None if value is None or len(value) < MIN_SHORT_LINK_LENGTH or len(value) > MAX_SHORT_LINK_LENGTH else value
-
-
 class LinkCreateSchema(BaseModel):
-    user_id: UUID
     long: HttpUrl
-    short: Annotated[Optional[str], BeforeValidator(validate_short_link)]
+    short: Optional[str] = None
     expires_at: Optional[datetime] = None
     redirect_limit: Optional[int] = Field(None, gt=0)
 
 
 class LinkUpdateSchema(BaseModel):
-    user_id: Optional[UUID] = None
     long: Optional[HttpUrl] = None
     expires_at: Optional[datetime] = None
     redirect_limit: Optional[int] = Field(None, gt=0)
@@ -45,7 +39,6 @@ class LinkListSchema(BaseModel):
 class LinkListQueryParams(BaseModel):
     offset: int = Field(0, ge=0)
     limit: int = Field(2, ge=1, le=100)
-    user: Optional[UUID] = None
     older_than: Optional[datetime] = None
     newer_than: Optional[datetime] = None
     active_status: Optional[bool] = None

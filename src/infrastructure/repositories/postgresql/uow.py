@@ -3,8 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.repositories.postgresql import PostgresLinkRepository, PostgresUserRepository, PostgresTokenRepository
 
 
-class PostgreSQLLinkUoW:
-    """TODO нет абстракции UoW и это хуево"""
+class PostgresLinkUoW:
     def __init__(self, session: AsyncSession):
         self._session: AsyncSession = session
 
