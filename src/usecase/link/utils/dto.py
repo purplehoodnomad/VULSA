@@ -53,13 +53,23 @@ class LinkCreateDTO:
                 redirect_limit=RedirectLimit(self.redirect_limit) if self.redirect_limit is not None else None
             )
 
+
+@dataclass(slots=True)
+class LinkUpdateDTO:
+    long: Optional[str] = None
+    new_short: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    redirect_limit: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
 @dataclass(slots=True)
 class LinkFilterDto:
     offset: int
     limit: int
-    user: Optional[UUID]
-    older_than: Optional[datetime]
-    newer_than: Optional[datetime]
-    active_status: Optional[bool]
-    has_expiration_date: Optional[bool]
-    has_redirect_limit: Optional[bool]
+    user: Optional[UUID] = None
+    older_than: Optional[datetime] = None
+    newer_than: Optional[datetime] = None
+    active_status: Optional[bool] = None
+    has_expiration_date: Optional[bool] = None
+    has_redirect_limit: Optional[bool] = None

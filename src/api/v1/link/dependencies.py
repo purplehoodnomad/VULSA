@@ -9,6 +9,7 @@ from usecase.link.create_link import AbstractCreateLinkUseCase, PostgresCreateLi
 from usecase.link.redirect import AbstractLinkRedirectUseCase, PostgresLinkRedirectUseCase
 from usecase.link.get_user_links import AbstractGetUserLinksUseCase, PostgresGetUserLinksUseCase
 from usecase.link.delete_short import AbstractDeleteShortUseCase, PostgresDeleteShortUseCase
+from usecase.link.edit_short import AbstractEditShortLinkUseCase, PostgresEditShortLinkUseCase
 
 
 def get_link_uow(session: AsyncSession = Depends(get_async_session)) -> PostgresLinkUoW:
@@ -32,7 +33,7 @@ def get_delete_short_usecase(session: AsyncSession = Depends(get_async_session))
     uow = get_link_uow(session)
     return PostgresDeleteShortUseCase(uow=uow)
 
-# def get_link_get_by_id_usecase(session: AsyncSession = Depends(get_async_session)) -> GetLinkByIdUseCase:
-#     uow = get_link_uow(session)
-#     return GetLinkByIdUseCaseImpl(uow=uow)
+def get_edit_short_link_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractEditShortLinkUseCase:
+    uow = get_link_uow(session)
+    return PostgresEditShortLinkUseCase(uow=uow)
 

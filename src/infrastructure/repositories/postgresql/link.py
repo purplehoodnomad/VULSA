@@ -41,6 +41,13 @@ class PostgresLinkRepository(AbstractLinkRepository):
             raise ShortLinkDoesNotExistException(short=short.value)
         
         return link_orm.to_entity()
+    
+    async def is_short_taken(self, short: Short) -> bool:
+        statement = select(LinkORM).where(LinkORM.short == short.value)
+        result = await self._session.execute(statement)
+        link_orm = result.scalar_one_or_none()
+
+        return link_orm is not None
 
 
     async def update(self, entity: Link) -> Link:

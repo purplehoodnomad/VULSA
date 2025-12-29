@@ -36,9 +36,6 @@ class Short:
         return Short(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(size)).lower())
 
     def __post_init__(self):
-        if len(self.value) < MIN_SHORT_LINK_LENGTH or len(self.value) > MAX_SHORT_LINK_LENGTH:
-            raise ValueError(f"Invalid short link length: {self.value}")
-        
         if not fullmatch(r'^[a-z0-9]+$', self.value):
             raise ValueError(f"Invalid short link: {self.value}")
     

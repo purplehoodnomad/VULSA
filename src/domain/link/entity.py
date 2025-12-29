@@ -26,7 +26,7 @@ class Link:
         created_at: datetime,
         times_used: int,
         is_active: bool,
-        redirect_limit: Optional[RedirectLimit],
+        redirect_limit: Optional[RedirectLimit] = None,
         expires_at: Optional[datetime] = None,
     ):
         self._link_id = link_id
@@ -100,7 +100,7 @@ class Link:
             short=short,
             redirect_limit=redirect_limit,
             expires_at=expires_at,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
             times_used=0,
             is_active=True
     )
@@ -116,3 +116,26 @@ class Link:
             raise UnprocessableShortLinkException(self.short.value)
         
         self._times_used += 1
+    
+    def change_long(self, long: Long) -> None:
+        self._long = long
+    
+    def change_short(self, short: Short) -> None:
+        self._short = short
+    
+    def change_expiration_date(self, new_date: datetime) -> None:
+        """Raises ValueError if expiration date older than current time"""
+        if new_date < datetime.now(timezone.utc):
+            raise ValueError("Expiration date can't be set to past")
+        self._expires_at = new_date
+    
+    def change_redirect_limit(self, redirect_limit: RedirectLimit) -> None:
+        if redirect_limit.value < self._times_used:
+            raise ValueError("Redirect limit can't be less than total redirect count")
+        self._redirect_limit = redirect_limit
+    
+    def activate(self) -> None:
+        self._is_active = True
+    
+    def deactivate(self) -> None:
+        self._is_active = False

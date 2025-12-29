@@ -9,22 +9,24 @@ from domain.user.exceptions import LinkOwnershipViolation
 from domain.link.exceptions import (
     ShortLinkDoesNotExistException,
     UnprocessableShortLinkException,
-    ShortLinkAlreadyExistsException
+    ShortLinkAlreadyExistsException,
 )
 
-from usecase.link.utils.dto import LinkDTO, LinkCreateDTO, LinkFilterDto
+from usecase.link.utils.dto import LinkCreateDTO, LinkUpdateDTO, LinkFilterDto
 from usecase.link import (
     AbstractCreateLinkUseCase,
     AbstractLinkRedirectUseCase,
     AbstractGetUserLinksUseCase,
-    AbstractDeleteShortUseCase
+    AbstractDeleteShortUseCase,
+    AbstractEditShortLinkUseCase
 )
     
 from .dependencies import (
     get_link_create_usecase,
     get_link_redirect_usecase,
     get_get_user_links_usecase,
-    get_delete_short_usecase
+    get_delete_short_usecase,
+    get_edit_short_link_usecase
 )
 
 from .schemas import LinkSchema, LinkCreateSchema, LinkListSchema, LinkListQueryParams
@@ -56,7 +58,7 @@ async def create_short_link(
 
     return JSONResponse(content=dto_to_schema(link_dto).model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
 
-@router.get("/{suffix}")
+@router.get("/{short}")
 async def process_redirect(
     suffix: str,
     usecase: AbstractLinkRedirectUseCase = Depends(get_link_redirect_usecase)
@@ -116,16 +118,22 @@ async def delete_short_link(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# @router.get("/details/{url_id}", response_model=LinkSchema)
-# async def get_link_data(
-#     link_id: UUID,
-#     usecase: GetLinkByIdUseCase = Depends(get_link_get_by_id_usecase)
-# ) -> JSONResponse:
-#     try:
-#         link = await usecase.execute(link_id)
-#     except LinkDoesNotExist:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+@router.patch("/{short}", response_model=LinkSchema)
+async def edit_short_link(
+    short: str,
+    dto: LinkUpdateDTO,
+    user_id: UUID = Depends(get_authentificated_user_id),
+    usecase: AbstractEditShortLinkUseCase = Depends(get_edit_short_link_usecase)
+) -> JSONResponse:
+    try:
+        link_dto = await usecase.execute(short=short, user_id=user_id, dto=dto)
+    except LinkOwnershipViolation as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_403_FORBIDDEN)
+    except ShortLinkDoesNotExistException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
+    except ShortLinkAlreadyExistsException as e:
+        raise HTTPException(detail=e.msg, status_code=status.HTTP_409_CONFLICT)
 
-#     return JSONResponse(content=link.model_dump(mode="json"), status_code=status.HTTP_200_OK)
+    return JSONResponse(content=dto_to_schema(link_dto).model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
 
