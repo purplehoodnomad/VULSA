@@ -1,21 +1,19 @@
 from uuid import UUID
 
 from fastapi import status, APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.responses import JSONResponse, Response
 
 from api.v1.dependencies import get_authentificated_user_id
 
 from domain.user.exceptions import LinkOwnershipViolation
 from domain.link.exceptions import (
     ShortLinkDoesNotExistException,
-    UnprocessableShortLinkException,
     ShortLinkAlreadyExistsException,
 )
 
 from usecase.link.utils.dto import LinkCreateDTO, LinkUpdateDTO, LinkFilterDto
 from usecase.link import (
     AbstractCreateLinkUseCase,
-    AbstractLinkRedirectUseCase,
     AbstractGetUserLinksUseCase,
     AbstractDeleteShortUseCase,
     AbstractEditShortLinkUseCase
@@ -23,7 +21,6 @@ from usecase.link import (
     
 from .dependencies import (
     get_link_create_usecase,
-    get_link_redirect_usecase,
     get_get_user_links_usecase,
     get_delete_short_usecase,
     get_edit_short_link_usecase
@@ -57,22 +54,6 @@ async def create_short_link(
         raise HTTPException(detail=str(e), status_code=status.HTTP_422_UNPROCESSABLE_CONTENT)
 
     return JSONResponse(content=dto_to_schema(link_dto).model_dump(mode="json"), status_code=status.HTTP_201_CREATED)
-
-@router.get("/{short}")
-async def process_redirect(
-    suffix: str,
-    usecase: AbstractLinkRedirectUseCase = Depends(get_link_redirect_usecase)
- ) -> RedirectResponse:
-    try:
-        link = await usecase.execute(suffix)
-    except ShortLinkDoesNotExistException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
-    except UnprocessableShortLinkException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_410_GONE)
-    except ValueError as e:
-        raise HTTPException(detail="Short link does not exist", status_code=status.HTTP_404_NOT_FOUND)
-
-    return RedirectResponse(url=link.long, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 
 @router.get("", response_model=LinkListSchema)

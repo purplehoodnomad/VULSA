@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from config.config import DEV
 from api.v1 import routers as api_v1
+from redirect import routers as redirect
 from container import Container
 
 container = Container()
@@ -44,3 +45,4 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(api_v1.router)
+app.include_router(redirect.router)
