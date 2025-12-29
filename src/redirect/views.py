@@ -15,11 +15,11 @@ router = APIRouter()
 
 @router.get("/{short}")
 async def process_redirect(
-    suffix: str,
+    short: str,
     usecase: AbstractLinkRedirectUseCase = Depends(get_link_redirect_usecase)
  ) -> RedirectResponse:
     try:
-        link = await usecase.execute(suffix)
+        link = await usecase.execute(short)
     except ShortLinkDoesNotExistException as e:
         raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
     except UnprocessableShortLinkException as e:

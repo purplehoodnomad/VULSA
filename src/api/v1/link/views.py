@@ -81,7 +81,7 @@ async def get_links_list(
     return JSONResponse(content=LinkListSchema(data=links_schemas).model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
 
-@router.delete("", response_model=None)
+@router.delete("/{short}", response_model=None)
 async def delete_short_link(
     short: str,
     user_id: UUID = Depends(get_authentificated_user_id),
@@ -114,6 +114,8 @@ async def edit_short_link(
         raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
     except ShortLinkAlreadyExistsException as e:
         raise HTTPException(detail=e.msg, status_code=status.HTTP_409_CONFLICT)
+    except ValueError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_409_CONFLICT)
 
     return JSONResponse(content=dto_to_schema(link_dto).model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
