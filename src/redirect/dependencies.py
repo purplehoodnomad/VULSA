@@ -3,12 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
 from infrastructure.postgresql.di.injection import build_link_uow
-from infrastructure.postgresql.uow.uow import PostgresLinkUoW
+from infrastructure.postgresql.uow.link import AbstractLinkUnitOfWork
 
-from usecase.link.redirect import AbstractLinkRedirectUseCase, PostgresLinkRedirectUseCase
+from usecase.redirect.abstract import AbstractLinkRedirectUseCase
+from usecase.redirect.implementation import PostgresLinkRedirectUseCase
 
 
-def get_link_uow(session: AsyncSession = Depends(get_async_session)) -> PostgresLinkUoW:
+def get_link_uow(session: AsyncSession = Depends(get_async_session)) -> AbstractLinkUnitOfWork:
     return build_link_uow(session)
 
 

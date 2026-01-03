@@ -1,31 +1,20 @@
-from abc import ABC, abstractmethod
 from uuid import UUID
 
-from infrastructure.postgresql.uow.uow import PostgresLinkUoW
+from infrastructure.uow.link import AbstractLinkUnitOfWork
 
 from domain.value_objects.common import UserId
 from domain.value_objects.link import Long, Short, RedirectLimit
 
 from domain.user.exceptions import LinkOwnershipViolation
-from domain.link.exceptions import ShortLinkDoesNotExistException, ShortLinkAlreadyExistsException
+from domain.link.exceptions import ShortLinkAlreadyExistsException
 
 from usecase.link.utils.dto import LinkDTO, LinkUpdateDTO
 
-
-class AbstractEditShortLinkUseCase(ABC):
-    @abstractmethod
-    async def execute(
-        self,
-        *,
-        user_id: UUID,
-        short: str,
-        dto: LinkUpdateDTO
-    ) -> LinkDTO:
-        raise NotImplementedError
+from .abstract import AbstractEditShortLinkUseCase
 
 
 class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
-    def __init__(self, uow: PostgresLinkUoW):
+    def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
 
     async def execute(
@@ -36,8 +25,8 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
         dto: LinkUpdateDTO
     ) -> LinkDTO:
         async with self.uow as uow:
-            user = await uow.user_repository.get(UserId(user_id)) # type: ignore
-            link = await uow.repository.get_by_short(Short(short)) # type: ignore
+            user = await uow.user_repo.get(UserId(user_id)) # type: ignore
+            link = await uow.link_repo.get_by_short(Short(short)) # type: ignore
             if link.user_id.value != user.user_id.value:
                 raise LinkOwnershipViolation(short=short, user_id=user_id)
             
@@ -45,7 +34,7 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
                 link.change_long(Long(dto.long))
             
             if dto.new_short is not None:
-                if await uow.repository.is_short_taken(Short(dto.new_short)): # type: ignore
+                if await uow.link_repo.is_short_taken(Short(dto.new_short)): # type: ignore
                     raise ShortLinkAlreadyExistsException(short=dto.new_short)
                 
                 link.change_short(Short(dto.new_short))
@@ -59,6 +48,6 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
             if dto.is_active is not None:
                 link.activate() if dto.is_active else link.deactivate()
             
-            updated_link = await uow.repository.update(link) # type: ignore
+            updated_link = await uow.link_repo.update(link) # type: ignore
 
             return LinkDTO.from_entity(updated_link)

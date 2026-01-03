@@ -6,8 +6,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from domain.value_objects.token import Token as TokenVO
 from domain.token.exceptions import AccessTokenExpiredException, TokenDoesNotExistException
 
-from api.v1.user.dependencies import get_me_usecase
-from usecase.user.me import MeUseCasePostgreSQL
+from api.v1.user.dependencies import get_get_current_user_usecase
+from usecase.user.get_current_user.abstract import AbstractGetCurrentUserUseCase
 
 
 security_http_bearer_schema = HTTPBearer(scheme_name="Bearer", description="Access token")
@@ -15,7 +15,7 @@ security_http_bearer_schema = HTTPBearer(scheme_name="Bearer", description="Acce
 
 async def get_authentificated_user_id(
         credentials: HTTPAuthorizationCredentials = Depends(security_http_bearer_schema),
-        usecase: MeUseCasePostgreSQL = Depends(get_me_usecase)
+        usecase: AbstractGetCurrentUserUseCase = Depends(get_get_current_user_usecase)
     ) -> UUID:
         access_token = credentials.credentials
         try:

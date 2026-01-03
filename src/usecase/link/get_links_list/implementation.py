@@ -1,28 +1,19 @@
-from abc import ABC, abstractmethod
-from uuid import UUID
-from datetime import datetime
-from typing import Optional
-
-from infrastructure.postgresql.uow.uow import PostgresLinkUoW
+from infrastructure.uow.link import AbstractLinkUnitOfWork
 
 from domain.value_objects.common import UserId
 
 from usecase.link.utils.dto import LinkDTO, LinkFilterDto
 
+from .abstract import AbstractGetLinksListUseCase
 
-class AbstractGetUserLinksUseCase(ABC):
-    @abstractmethod
-    async def execute(self, dto: LinkFilterDto) -> list[LinkDTO]:
-        raise NotImplementedError
-        
 
-class PostgresGetUserLinksUseCase(AbstractGetUserLinksUseCase):
-    def __init__(self, uow: PostgresLinkUoW):
+class PostgresGetLinksListUseCase(AbstractGetLinksListUseCase):
+    def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
     
     async def execute(self, dto: LinkFilterDto) -> list[LinkDTO]:
         async with self.uow as uow:
-            links = await uow.repository.list( # type: ignore
+            links = await uow.link_repo.list( # type: ignore
                 offset=dto.offset,
                 limit=dto.limit,
                 user_id=UserId(dto.user) if dto.user is not None else None,

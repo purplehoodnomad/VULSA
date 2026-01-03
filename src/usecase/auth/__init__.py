@@ -1,2 +1,2 @@
-from .refresh import AbstractRefreshAccessTokenUseCase
-from .login import AbstractLoginUseCase
+from .refresh.abstract import AbstractRefreshAccessTokenUseCase
+from .login.abstract import AbstractLoginUseCase

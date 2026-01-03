@@ -16,8 +16,10 @@ class LinkCreateSchema(BaseModel):
 
 class LinkUpdateSchema(BaseModel):
     long: Optional[HttpUrl] = None
-    expires_at: Optional[datetime] = None
-    redirect_limit: Optional[int] = Field(None, gt=0)
+    new_short: Optional[str] = None
+    expires_at: Optional[datetime] = Field(None, gt=0)
+    redirect_limit: Optional[int] = None
+    is_active: Optional[bool] = None
 
 
 class LinkSchema(BaseModel):

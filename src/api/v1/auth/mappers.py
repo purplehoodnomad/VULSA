@@ -1,5 +1,5 @@
 from .schemas import TokenSchema
-from usecase.token.utils.dto import TokenDTO
+from usecase.auth.utils.dto import TokenDTO
 
 def dto_to_schema(dto: TokenDTO) -> TokenSchema:
     return TokenSchema(

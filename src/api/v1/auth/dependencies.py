@@ -3,14 +3,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
 from infrastructure.postgresql.di.injection import build_auth_uow
-from infrastructure.postgresql.uow.uow import PostgresAuthUoW
+from infrastructure.uow.auth import AbstractAuthUnitOfWork
 
-from usecase.auth.refresh import AbstractRefreshAccessTokenUseCase, PostgresRefreshAccessTokenUseCase
-from usecase.auth.login import AbstractLoginUseCase, PostgresLoginUseCase
+from usecase.auth.refresh.abstract import AbstractRefreshAccessTokenUseCase
+from usecase.auth.login.abstract import AbstractLoginUseCase
+
+from usecase.auth.refresh.implementation import PostgresRefreshAccessTokenUseCase
+from usecase.auth.login.implementation import PostgresLoginUseCase
 
 
-def get_auth_uow(session: AsyncSession = Depends(get_async_session)) -> PostgresAuthUoW:
+def get_auth_uow(session: AsyncSession = Depends(get_async_session)) -> AbstractAuthUnitOfWork:
     return build_auth_uow(session)
+
 
 def get_refresh_access_token_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractRefreshAccessTokenUseCase:
     uow = get_auth_uow(session)

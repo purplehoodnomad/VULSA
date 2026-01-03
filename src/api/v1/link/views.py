@@ -14,19 +14,19 @@ from domain.link.exceptions import (
 from usecase.link.utils.dto import LinkCreateDTO, LinkUpdateDTO, LinkFilterDto
 from usecase.link import (
     AbstractCreateLinkUseCase,
-    AbstractGetUserLinksUseCase,
     AbstractDeleteShortUseCase,
-    AbstractEditShortLinkUseCase
+    AbstractEditShortLinkUseCase,
+    AbstractGetLinksListUseCase
 )
     
 from .dependencies import (
     get_link_create_usecase,
-    get_get_user_links_usecase,
+    get_get_link_list_usecase,
     get_delete_short_usecase,
     get_edit_short_link_usecase
 )
 
-from .schemas import LinkSchema, LinkCreateSchema, LinkListSchema, LinkListQueryParams
+from .schemas import LinkSchema, LinkCreateSchema, LinkListSchema, LinkListQueryParams, LinkUpdateSchema
 from .mappers import dto_to_schema
 
 
@@ -60,7 +60,7 @@ async def create_short_link(
 async def get_links_list(
     params: LinkListQueryParams = Depends(),
     user_id: UUID = Depends(get_authentificated_user_id),
-    usecase: AbstractGetUserLinksUseCase = Depends(get_get_user_links_usecase)
+    usecase: AbstractGetLinksListUseCase = Depends(get_get_link_list_usecase)
 ) -> JSONResponse:
     
     dto = LinkFilterDto(
@@ -102,10 +102,17 @@ async def delete_short_link(
 @router.patch("/{short}", response_model=LinkSchema)
 async def edit_short_link(
     short: str,
-    dto: LinkUpdateDTO,
+    payload: LinkUpdateSchema,
     user_id: UUID = Depends(get_authentificated_user_id),
     usecase: AbstractEditShortLinkUseCase = Depends(get_edit_short_link_usecase)
 ) -> JSONResponse:
+    dto = LinkUpdateDTO(
+        long=str(payload.long),
+        new_short=payload.new_short,
+        expires_at=payload.expires_at,
+        redirect_limit=payload.redirect_limit,
+        is_active=payload.is_active
+    )
     try:
         link_dto = await usecase.execute(short=short, user_id=user_id, dto=dto)
     except LinkOwnershipViolation as e:

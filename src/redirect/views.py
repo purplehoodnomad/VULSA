@@ -6,7 +6,7 @@ from domain.link.exceptions import (
     UnprocessableShortLinkException,
 )
 
-from usecase.link import AbstractLinkRedirectUseCase
+from usecase.redirect.abstract import AbstractLinkRedirectUseCase
 from .dependencies import get_link_redirect_usecase
 
 
