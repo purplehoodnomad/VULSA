@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from infrastructure.repositories.postgresql.uow import PostgreSQLTokenUoW
+from infrastructure.postgresql.uow.uow import PostgreSQLTokenUoW
 from domain.token.entity import Token
 from domain.value_objects.common import UserId
 from .utils.dto import TokenDTO

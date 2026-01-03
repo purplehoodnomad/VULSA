@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, DateTime, Enum
 from sqlalchemy import UUID as UUIDAlchemy
 
-from ..base import Base
+from infrastructure.sqlalchemy.base import Base
 
 from utils.enums import UserStatus
 

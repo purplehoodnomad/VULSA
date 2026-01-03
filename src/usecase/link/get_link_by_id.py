@@ -1,7 +1,7 @@
 # from abc import ABC, abstractmethod
 # from uuid import UUID
 
-# from infrastructure.repositories.postgresql.uow import PostgreSQLLinkUoW
+# from infrastructure.postgresql.uow.uow import PostgreSQLLinkUoW
 # from domain.value_objects.common import LinkId
 # from usecase.common.mappers import link_entity_to_schema
 # from api.v1.link.schemas import LinkSchema

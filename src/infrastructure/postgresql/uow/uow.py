@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.repositories.postgresql import PostgresLinkRepository, PostgresUserRepository, PostgresTokenRepository
+from infrastructure.postgresql.repositories import PostgresLinkRepository, PostgresUserRepository, PostgresTokenRepository
 
 
 class PostgresLinkUoW:

@@ -4,8 +4,9 @@ from fastapi import Depends
 from dependency_injector.wiring import inject, Provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.databases.postgresql.session_manager import DatabaseSessionManager
 from container import Container
+
+from .session_manager import DatabaseSessionManager
 
 
 @inject

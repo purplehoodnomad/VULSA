@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.databases.postgresql.session import get_async_session
-from infrastructure.di.injection import build_link_uow
-from infrastructure.repositories.postgresql.uow import PostgresLinkUoW
+from infrastructure.sqlalchemy.session import get_async_session
+from infrastructure.postgresql.di.injection import build_link_uow
+from infrastructure.postgresql.uow.uow import PostgresLinkUoW
 
 from usecase.link.redirect import AbstractLinkRedirectUseCase, PostgresLinkRedirectUseCase
 

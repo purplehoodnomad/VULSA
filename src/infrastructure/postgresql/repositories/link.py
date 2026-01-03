@@ -6,8 +6,8 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from infrastructure.databases.postgresql.models import LinkORM
-from infrastructure.databases.postgresql.exceptions import handle_unique_integrity_error
+from infrastructure.postgresql.models import LinkORM
+from infrastructure.postgresql.exceptions import handle_unique_integrity_error
 
 from domain.link.repository import AbstractLinkRepository
 from domain.link.entity import Link
@@ -118,12 +118,3 @@ class PostgresLinkRepository(AbstractLinkRepository):
     async def delete(self, entity: Link) -> None:
         stmt = delete(LinkORM).where(LinkORM.id == entity.link_id.value)
         await self._session.execute(stmt)
-
-
-    # async def get(self, link_id: LinkId) -> Link:
-    #     link_orm = await self._session.get(LinkORM, link_id.value)
-
-    #     if link_orm is None:
-    #         raise LinkDoesNotExist()
-
-    #     return link_orm.to_entity()

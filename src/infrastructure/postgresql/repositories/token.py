@@ -2,8 +2,8 @@ from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.databases.postgresql.models import TokenORM
-from infrastructure.databases.postgresql.exceptions import handle_unique_integrity_error
+from infrastructure.postgresql.models import TokenORM
+from infrastructure.postgresql.exceptions import handle_unique_integrity_error
 
 from domain.token.repository import AbstractTokenRepository
 from domain.token.entity import Token
@@ -78,32 +78,3 @@ class PostgresTokenRepository(AbstractTokenRepository):
             raise TokenDoesNotExistException(refresh_token=refresh_token.value)
 
         return token_orm.to_entity()
-
-    # async def get(self, user_id: UserId) -> User:
-    #     user_orm = await self._session.get(UserORM, user_id.value)
-
-    #     if user_orm is None:
-    #         raise UserDoesNotExistException(user_id.value)
-
-    #     return user_orm.to_entity()
-    
-
-    # async def delete(self, user_id: UserId) -> None:
-    #     stmt = delete(UserORM).where(UserORM.id == user_id.value)
-    #     await self._session.execute(stmt)
-
-
-    # async def list(self,
-    #     filter: UserFilterDto
-    # ) -> list[User]:
-    #     expression = []
-        
-    #     if filter.status is not None:
-    #         expression.append(UserORM.status == filter.status)
-
-    #     query = select(UserORM).where(*expression).offset(filter.offset).limit(filter.limit)
-
-    #     result = await self._session.execute(query)
-    #     scalars = result.scalars().all()
-
-    #     return [scalar.to_entity() for scalar in scalars]

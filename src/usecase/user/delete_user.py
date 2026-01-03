@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from infrastructure.repositories.postgresql.uow import PostgreSQLUserUoW
+from infrastructure.postgresql.uow.uow import PostgreSQLUserUoW
 
 from domain.value_objects.common import UserId
 from domain.value_objects.user import Email

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from infrastructure.repositories.postgresql.uow import PostgresLinkUoW
+from infrastructure.postgresql.uow.uow import PostgresLinkUoW
 
 from domain.value_objects.common import UserId
 from domain.value_objects.link import Short

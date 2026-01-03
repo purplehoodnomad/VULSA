@@ -3,7 +3,7 @@ from uuid import UUID
 from datetime import datetime
 from typing import Optional
 
-from infrastructure.repositories.postgresql.uow import PostgresLinkUoW
+from infrastructure.postgresql.uow.uow import PostgresLinkUoW
 
 from domain.value_objects.common import UserId
 

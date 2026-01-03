@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from infrastructure.repositories.postgresql.uow import PostgresAuthUoW
+from infrastructure.postgresql.uow.uow import PostgresAuthUoW
 
 from usecase.token.utils.dto import TokenDTO
 from usecase.auth.utils.dto import LoginUserDTO

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from infrastructure.repositories.postgresql.uow import PostgresLinkUoW
+from infrastructure.postgresql.uow.uow import PostgresLinkUoW
 from domain.value_objects.link import Short
 
 from usecase.link.utils.dto import LinkDTO

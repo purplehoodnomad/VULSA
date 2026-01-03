@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy import UUID as UUIDAlchemy
 
-from ..base import Base
+from infrastructure.sqlalchemy.base import Base
 
 from domain.link.entity import Link
 from domain.value_objects.common import (

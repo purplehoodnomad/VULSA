@@ -8,6 +8,15 @@ from redirect import routers as redirect
 from container import Container
 
 container = Container()
+container.wire(
+    modules=[
+        "infrastructure.sqlalchemy.session",
+        "api.v1.link.dependencies",
+        "api.v1.user.dependencies",
+        "api.v1.auth.dependencies",
+        "redirect.dependencies"
+    ]
+) 
 
 
 @asynccontextmanager
@@ -24,14 +33,7 @@ async def lifespan(app: FastAPI):
     async with sessionmanager.connect() as connection:
         # if DEV:
         #     await sessionmanager.drop_all(connection)
-        await sessionmanager.create_all(connection)
-
-        container.wire(
-        modules=[
-            "infrastructure.databases.postgresql.session",
-            "api.v1.link.dependencies"
-        ]
-    )  
+        await sessionmanager.create_all(connection) 
 
     try:
         yield

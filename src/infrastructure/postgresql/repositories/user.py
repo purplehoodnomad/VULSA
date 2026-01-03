@@ -4,8 +4,8 @@ from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.databases.postgresql.models import UserORM
-from infrastructure.databases.postgresql.exceptions import handle_unique_integrity_error
+from infrastructure.postgresql.models import UserORM
+from infrastructure.postgresql.exceptions import handle_unique_integrity_error
 
 from domain.user.repository import AbstractUserRepository
 from domain.user.entity import User
@@ -59,22 +59,6 @@ class PostgresUserRepository(AbstractUserRepository):
     async def delete(self, user_id: UserId) -> None:
         stmt = delete(UserORM).where(UserORM.id == user_id.value)
         await self._session.execute(stmt)
-
-
-    # async def list(self,
-    #     filter: UserFilterDto
-    # ) -> list[User]:
-    #     expression = []
-        
-    #     if filter.status is not None:
-    #         expression.append(UserORM.status == filter.status)
-
-    #     query = select(UserORM).where(*expression).offset(filter.offset).limit(filter.limit)
-
-    #     result = await self._session.execute(query)
-    #     scalars = result.scalars().all()
-
-    #     return [scalar.to_entity() for scalar in scalars]
     
 
     async def find_user_by_access_token(self, access_token: TokenVO) -> User:

@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.databases.postgresql.session import get_async_session
-from infrastructure.di.injection import build_auth_uow
-from infrastructure.repositories.postgresql.uow import PostgresAuthUoW
+from infrastructure.sqlalchemy.session import get_async_session
+from infrastructure.postgresql.di.injection import build_auth_uow
+from infrastructure.postgresql.uow.uow import PostgresAuthUoW
 
 from usecase.auth.refresh import AbstractRefreshAccessTokenUseCase, PostgresRefreshAccessTokenUseCase
 from usecase.auth.login import AbstractLoginUseCase, PostgresLoginUseCase
