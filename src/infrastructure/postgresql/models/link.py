@@ -23,12 +23,11 @@ from domain.value_objects.link import (
 class LinkORM(Base):
     __tablename__ = "link"
 
-    # атрибут связи, обещаем клас UserORM и links как поле в нем
-    user: Mapped["UserORM"] = relationship("UserORM", back_populates="links") # type: ignore
+    user: Mapped["UserORM"] = relationship("UserORM", back_populates="links", passive_deletes=True) # type: ignore
 
     user_id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),
-        ForeignKey('user.id'),
+        ForeignKey('user.id', ondelete="CASCADE"),
         nullable=False
     )
     
@@ -36,7 +35,6 @@ class LinkORM(Base):
         UUIDAlchemy(as_uuid=True),
         primary_key=True,
         nullable=False,
-        # default=uuid4 # вызывает метод до SQL
     )
     
     long: Mapped[str] = mapped_column(
@@ -47,7 +45,7 @@ class LinkORM(Base):
     short: Mapped[str] = mapped_column(
         String(16),
         unique=True,
-        index=True # ускоряет SELECT, но замедляет INSERT и UPDATE
+        index=True
     )
 
     is_active: Mapped[bool] = mapped_column(
@@ -69,7 +67,6 @@ class LinkORM(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        # server_default=func.now() # подсовывает now() в SQL
     )
 
     @staticmethod
@@ -92,7 +89,7 @@ class LinkORM(Base):
             user_id=UserId(self.user_id),
             long=Long(self.long),
             short=Short(self.short),
-            redirect_limit=RedirectLimit(self.redirect_limit) if self.redirect_limit is not None else None,
+            redirect_limit=RedirectLimit(self.redirect_limit),
             expires_at=self.expires_at,
             created_at=self.created_at,
             times_used=self.times_used,

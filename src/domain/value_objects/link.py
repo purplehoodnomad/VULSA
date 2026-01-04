@@ -5,18 +5,19 @@ from re import fullmatch
 
 from config.config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
 
+from domain.exceptions import InvalidValue
+
 
 @dataclass(frozen=True)
 class Long:
-    """Represents base URL for Link entity"""
     value: str
 
     def __post_init__(self):
         if not self.value:
-            raise ValueError("Link URL is required")
+            raise InvalidValue("Link URL is required")
         
         if not validators.url(self.value):
-            raise ValueError(f"Invalid URL: {self.value}")
+            raise InvalidValue(f"Invalid URL: {self.value}")
     
     def __str__(self) -> str:
         return str(self.value)
@@ -24,7 +25,6 @@ class Long:
 
 @dataclass(frozen=True)
 class Short:
-    """Represents shorten URL suffix for Link entity"""
     value: str
 
     @staticmethod
@@ -36,8 +36,11 @@ class Short:
         return Short(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(size)).lower())
 
     def __post_init__(self):
+        if not self.value:
+            raise InvalidValue("Suffix for short link is required")
+        
         if not fullmatch(r'^[a-z0-9]+$', self.value):
-            raise ValueError(f"Invalid short link: {self.value}")
+            raise InvalidValue(f"Invalid short link: {self.value}")
     
     def __str__(self) -> str:
         return str(self.value)
@@ -45,12 +48,11 @@ class Short:
 
 @dataclass(frozen=True)
 class RedirectLimit:
-    """Represents shorten URL suffix for Link entity"""
-    value: int
+    value: int | None
 
     def __post_init__(self):
-        if self.value <= 0:
-            raise ValueError(f"Redirect limit must be positive integer: {self.value}")
+        if self.value is not None and self.value <= 0:
+            raise InvalidValue(f"Redirect limit must be positive integer: {self.value}")
     
     def __str__(self) -> str:
         return str(self.value)

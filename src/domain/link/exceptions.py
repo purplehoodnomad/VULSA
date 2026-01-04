@@ -1,40 +1,31 @@
-from uuid import UUID
-from typing import Optional
+from domain.exceptions import DomainException
 
 
-class ShortLinkAlreadyExistsException(Exception):
-    def __init__(self, short: Optional[str] = None) -> None:
-        if short is not None:
-            self.msg = f"Short link {short} already exists"
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.short = short
+class ShortLinkAlreadyExists(DomainException):
+    code = "SHORT_LINK_ALREADY_EXISTS"
+    message = "Short link already exists"
 
-class ShortLinkDoesNotExistException(Exception):
-    def __init__(self,
-        *,
-        short: Optional[str] = None,
-        link_id: Optional[UUID] = None
-    ) -> None:
-        if short is not None:
-            self.msg = f"Short link {short} does not exist"
-        if link_id is not None:
-            self.msg = f"Short link with id {link_id} does not exist"   
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.short = short
-        self.link_id = link_id
 
-class UnprocessableShortLinkException(Exception):
-    def __init__(self, short: Optional[str] = None) -> None:
-        if short is not None:
-            self.msg = f"Short link {short} is expired"
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.short = short
+class ShortLinkNotFound(DomainException):
+    code = "SHORT_LINK_NOT_FOUND"
+    message = "Short link not found"
+
+
+class ShortLinkExpired(DomainException):
+    code = "SHORT_LINK_EXPIRED"
+    message = "Short link has expired"
+
+
+class ShortLinkRedirectLimitReached(DomainException):
+    code = "SHORT_LINK_REDIRECT_LIMIT_REACHED"
+    message = "Maximum redirects reached for this short link"
+
+
+class ShortLinkInactive(DomainException):
+    code = "SHORT_LINK_INACTIVE"
+    message = "Short link is temporarily deactivated by it's owner"
+
+
+class ShortLinkAccessDenied(DomainException):
+    code = "SHORT_LINK_ACCESS_DENIED"
+    message = "Access to this short link is denied"

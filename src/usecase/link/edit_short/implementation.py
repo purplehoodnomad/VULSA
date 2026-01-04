@@ -5,8 +5,7 @@ from infrastructure.uow.link import AbstractLinkUnitOfWork
 from domain.value_objects.common import UserId
 from domain.value_objects.link import Long, Short, RedirectLimit
 
-from domain.user.exceptions import LinkOwnershipViolation
-from domain.link.exceptions import ShortLinkAlreadyExistsException
+from domain.link.exceptions import ShortLinkAlreadyExists, ShortLinkAccessDenied
 
 from usecase.link.utils.dto import LinkDTO, LinkUpdateDTO
 
@@ -25,17 +24,17 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
         dto: LinkUpdateDTO
     ) -> LinkDTO:
         async with self.uow as uow:
-            user = await uow.user_repo.get(UserId(user_id)) # type: ignore
-            link = await uow.link_repo.get_by_short(Short(short)) # type: ignore
+            user = await uow.user_repo.get(UserId(user_id))
+            link = await uow.link_repo.get_by_short(Short(short))
             if link.user_id.value != user.user_id.value:
-                raise LinkOwnershipViolation(short=short, user_id=user_id)
+                raise ShortLinkAccessDenied()
             
             if dto.long is not None:
                 link.change_long(Long(dto.long))
             
             if dto.new_short is not None:
-                if await uow.link_repo.is_short_taken(Short(dto.new_short)): # type: ignore
-                    raise ShortLinkAlreadyExistsException(short=dto.new_short)
+                if await uow.link_repo.is_short_taken(Short(dto.new_short)):
+                    raise ShortLinkAlreadyExists()
                 
                 link.change_short(Short(dto.new_short))
             
@@ -48,6 +47,5 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
             if dto.is_active is not None:
                 link.activate() if dto.is_active else link.deactivate()
             
-            updated_link = await uow.link_repo.update(link) # type: ignore
-
+            updated_link = await uow.link_repo.update(link)
             return LinkDTO.from_entity(updated_link)

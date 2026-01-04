@@ -1,22 +1,18 @@
-from typing import Any
 from sqlalchemy.exc import IntegrityError
-from domain.user.exceptions import UserWithEmailAlreadyExistsException
-from domain.link.exceptions import ShortLinkAlreadyExistsException
+
+from domain.user.exceptions import UserEmailAlreadyExists
+from domain.link.exceptions import ShortLinkAlreadyExists
 
 
 PG_UNIQUE_VIOLATION = "23505"
 
 
 _UNIQUE_CONSTRAINT_MAP = {
-    "ix_user_email": {"attr": "email", "error": UserWithEmailAlreadyExistsException},
-    "ix_link_short": {"attr": "short", "error": ShortLinkAlreadyExistsException}
+    "ix_user_email": UserEmailAlreadyExists,
+    "ix_link_short": ShortLinkAlreadyExists
 }
 
-def handle_unique_integrity_error(
-        error: IntegrityError,
-        *,
-        entity: Any
-    ) -> None:
+def handle_unique_integrity_error(error: IntegrityError) -> None:
     """Maps PG_UNIQUE_VIOLATION to domain exceptions"""
     orig = error.orig
 
@@ -25,6 +21,6 @@ def handle_unique_integrity_error(
 
     for constraint, exc in _UNIQUE_CONSTRAINT_MAP.items():
         if constraint in str(orig):
-            raise exc["error"](getattr(entity, exc["attr"]))
+            raise exc
 
     raise error

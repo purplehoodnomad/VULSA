@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
 from domain.value_objects.common import UserId
-from domain.value_objects.token import Token as TokenVO, TokenId
-from .exceptions import RefreshTokenExpiredException
+from domain.value_objects.token import TokenVO, TokenId
+from .exceptions import RefreshTokenExpired, AccessTokenExpired
 
 
 class Token:
@@ -80,22 +80,35 @@ class Token:
         )
     
     def refresh(self) -> None:
-        "Refreshes access token"
+        """Refreshes access token.
+        Raises:
+            RefreshTokenExpired: When token is expired.
+        """
         now = datetime.now(timezone.utc)
-        if now >= self._refresh_token_expires_at:
-            raise RefreshTokenExpiredException(self.refresh_token.value)
+        self.validate_refresh_token()
         
         self._access_token = TokenVO.generate()
         self._access_token_expires_at = now + timedelta(minutes=15)
     
     
     def drop(self) -> None:
+        """Sets refresh token expiration date to current time."""
         now = datetime.now(timezone.utc)
         self._refresh_token_expires_at=now
 
 
-    def is_access_token_valid(self) -> bool:
-        return datetime.now(timezone.utc) < self.access_token_expires_at
+    def validate_access_token(self) -> None:
+        """Validates access token.
+        Raises:
+            AccessTokenExpired: When token is expired.
+        """
+        if datetime.now(timezone.utc) > self.access_token_expires_at:
+            raise AccessTokenExpired()
 
-    def is_refresh_token_valid(self) -> bool:
-        return datetime.now(timezone.utc) < self.refresh_token_expires_at
+    def validate_refresh_token(self) -> None:
+        """Validates refresh token.
+        Raises:
+            RefreshTokenExpired: When token is expired.
+        """
+        if datetime.now(timezone.utc) > self.refresh_token_expires_at:
+            raise RefreshTokenExpired()

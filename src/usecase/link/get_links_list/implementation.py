@@ -13,7 +13,7 @@ class PostgresGetLinksListUseCase(AbstractGetLinksListUseCase):
     
     async def execute(self, dto: LinkFilterDto) -> list[LinkDTO]:
         async with self.uow as uow:
-            links = await uow.link_repo.list( # type: ignore
+            links = await uow.link_repo.list(
                 offset=dto.offset,
                 limit=dto.limit,
                 user_id=UserId(dto.user) if dto.user is not None else None,

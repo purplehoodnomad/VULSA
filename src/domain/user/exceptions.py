@@ -1,58 +1,26 @@
-from uuid import UUID
-from typing import Optional
+from domain.exceptions import DomainException
 
 
-class UserDoesNotExistException(Exception):
-    def __init__(self, user_id: UUID | None = None) -> None:
-        if user_id is not None:
-            self.msg = f"User with id {user_id} does not exist"
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.user_id = user_id
+class UserNotFound(DomainException):
+    code = "USER_NOT_FOUND"
+    message = "User is not found"
 
 
-class UserWithEmailAlreadyExistsException(Exception):
-    def __init__(self, email: Optional[str] = None) -> None:
-        if email is not None:
-            self.msg = f"User with email {email} already exists"
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.email = email
+class UserEmailAlreadyExists(DomainException):
+    code = "USER_EMAIL_ALREADY_EXISTS"
+    message = "User with this email already exists"
 
 
-class EmailDoesNotExistException(Exception):
-    def __init__(self, email: Optional[str] = None) -> None:
-        if email is not None:
-            self.msg = f"User with email {email} does not exist"
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.email = email
+class UserEmailNotFound(DomainException):
+    code = "USER_EMAIL_NOT_FOUND"
+    message = "User with this email is not found"
 
 
-class PasswordMismatchException(Exception):
-    def __init__(self, user_id: Optional[UUID] = None) -> None:
-        if user_id is not None:
-            self.msg = f"Invalid password for user with id {user_id}"
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.user_id = user_id
+class InvalidPassword(DomainException):
+    code = "INVALID_PASSWORD"
+    message = "User password is invalid"
 
 
-class LinkOwnershipViolation(Exception):
-    def __init__(self, *, short: str, user_id: UUID) -> None:
-        if user_id is not None:
-            self.msg = f"User {user_id} does not own {short}"
-        else:
-            self.msg = ""
-        super().__init__(self.msg)
-        
-        self.user_id = user_id
-        self.short = short
+class UserEmailMismatch(DomainException):
+    code = "USER_EMAIL_MISMATCH"
+    message = "Given email does not match user's" 

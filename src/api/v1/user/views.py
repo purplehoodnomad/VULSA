@@ -1,11 +1,9 @@
 from uuid import UUID
 
-from fastapi import status, APIRouter, Depends, HTTPException
+from fastapi import status, APIRouter, Depends
 from fastapi.responses import JSONResponse, Response
 
 from api.v1.dependencies import get_authentificated_user_id
-
-from domain.user.exceptions import UserDoesNotExistException, UserWithEmailAlreadyExistsException
 
 from usecase.user.utils.dto import UserCreateDTO, UserDeleteDTO
 from usecase.user import (
@@ -13,8 +11,8 @@ from usecase.user import (
     AbstractGetUserByIdUseCase,
     AbstractDeleteUserUseCase,
 )
-
 from .dependencies import get_create_user_usecase, get_get_user_by_id_usecase, get_delete_user_usecase
+
 from .schemas import UserSchema, UserCreateSchema, UserDeleteSchema
 from .mappers import dto_to_schema
 
@@ -32,10 +30,7 @@ async def create_user(
         email=str(payload.email),
         password=payload.password,
     )
-    try:
-        created_user_dto = await usecase.execute(dto)
-    except UserWithEmailAlreadyExistsException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_409_CONFLICT)
+    created_user_dto = await usecase.execute(dto)
     
     schema = dto_to_schema(created_user_dto)
 
@@ -58,13 +53,9 @@ async def get_user(
     user_id: UUID,
     usecase: AbstractGetUserByIdUseCase = Depends(get_get_user_by_id_usecase),
 ) -> JSONResponse:
-    try:
-        user = await usecase.execute(user_id)
-    except UserDoesNotExistException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
+    user = await usecase.execute(user_id)
     
     schema = dto_to_schema(user)
-
     return JSONResponse(content=schema.model_dump(mode="json"), status_code=status.HTTP_200_OK)
 
 
@@ -79,9 +70,5 @@ async def delete_user(
         email=payload.email,
         password=payload.password
     )
-    try:
-        await usecase.execute(dto)
-    except UserDoesNotExistException as e:
-        raise HTTPException(detail=e.msg, status_code=status.HTTP_404_NOT_FOUND)
-    
+    await usecase.execute(dto)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

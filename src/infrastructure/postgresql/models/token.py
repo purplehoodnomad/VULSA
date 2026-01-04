@@ -9,13 +9,13 @@ from infrastructure.sqlalchemy.base import Base
 
 from domain.token.entity import Token
 from domain.value_objects.common import UserId
-from domain.value_objects.token import Token as TokenVO, TokenId
+from domain.value_objects.token import TokenVO, TokenId
 
 
 class TokenORM(Base):
     __tablename__ = "token"
 
-    user: Mapped["UserORM"] = relationship("UserORM", back_populates="tokens") # type: ignore
+    user: Mapped["UserORM"] = relationship("UserORM", back_populates="tokens", passive_deletes=True) # type: ignore
     
     id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),
@@ -25,7 +25,7 @@ class TokenORM(Base):
     
     user_id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),
-        ForeignKey("user.id"),
+        ForeignKey("user.id", ondelete="CASCADE"),
         nullable=False,
     )
 
@@ -78,3 +78,9 @@ class TokenORM(Base):
             refresh_token_expires_at=self.refresh_token_expires_at,
             created_at=self.created_at,
         )
+    
+    def update_from_entity(self, entity: Token) -> None:
+        self.access_token = entity.access_token.value
+        self.access_token_expires_at = entity.access_token_expires_at
+        self.refresh_token = entity.refresh_token.value
+        self.refresh_token_expires_at = entity.refresh_token_expires_at

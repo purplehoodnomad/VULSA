@@ -17,11 +17,9 @@ class PostgresDeleteUserUseCase(AbstractDeleteUserUseCase):
         dto: UserDeleteDTO
     ) -> None:
         async with self.uow as uow:
-            user = await uow.user_repo.get(UserId(dto.user_id)) # type: ignore
+            user = await uow.user_repo.get(UserId(dto.user_id))
 
-            if not user.check_password(dto.password):
-                raise ValueError("User password mismatch")
-            if not user.email == Email(dto.email):
-                raise ValueError("User email mismatch")
+            user.validate_password(dto.password)
+            user.validate_email(Email(dto.email))
 
-            await uow.user_repo.delete(UserId(dto.user_id)) # type: ignore
+            await uow.user_repo.delete(user)

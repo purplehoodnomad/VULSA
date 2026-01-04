@@ -1,4 +1,3 @@
-from uuid import UUID
 from datetime import datetime
 from typing import Optional
 
@@ -10,16 +9,19 @@ from infrastructure.postgresql.models import LinkORM
 from infrastructure.postgresql.exceptions import handle_unique_integrity_error
 
 from domain.link.repository import AbstractLinkRepository
+
 from domain.link.entity import Link
-from domain.value_objects.common import LinkId, UserId
+from domain.link.exceptions import ShortLinkNotFound
+
+from domain.value_objects.common import UserId
 from domain.value_objects.link import Short
-from domain.link.exceptions import ShortLinkDoesNotExistException
 
 
 class PostgresLinkRepository(AbstractLinkRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session: AsyncSession = session
     
+
     async def create(self, entity: Link) -> Link:
         link_orm = LinkORM.from_entity(entity)
 
@@ -27,33 +29,15 @@ class PostgresLinkRepository(AbstractLinkRepository):
         try:
             await self._session.flush()
         except IntegrityError as e:
-            handle_unique_integrity_error(e, entity=entity)
+            handle_unique_integrity_error(e)
         
         return link_orm.to_entity()
-
-
-    async def get_by_short(self, short: Short) -> Link:
-        statement = select(LinkORM).where(LinkORM.short == short.value)
-        result = await self._session.execute(statement)
-        link_orm = result.scalar_one_or_none()
-
-        if link_orm is None:
-            raise ShortLinkDoesNotExistException(short=short.value)
-        
-        return link_orm.to_entity()
-    
-    async def is_short_taken(self, short: Short) -> bool:
-        statement = select(LinkORM).where(LinkORM.short == short.value)
-        result = await self._session.execute(statement)
-        link_orm = result.scalar_one_or_none()
-
-        return link_orm is not None
 
 
     async def update(self, entity: Link) -> Link:
         link_orm = await self._session.get(LinkORM, entity.link_id.value)
         if link_orm is None:
-            raise ShortLinkDoesNotExistException(link_id=entity.link_id.value)
+            raise ShortLinkNotFound()
         
         link_orm.user_id = entity.user_id.value
         link_orm.long = entity.long.value
@@ -66,9 +50,33 @@ class PostgresLinkRepository(AbstractLinkRepository):
         try:
             await self._session.flush()
         except IntegrityError as e:
-            handle_unique_integrity_error(e, entity=entity)
+            handle_unique_integrity_error(e)
         
         return link_orm.to_entity()
+
+
+    async def delete(self, entity: Link) -> None:
+        stmt = delete(LinkORM).where(LinkORM.id == entity.link_id.value)
+        await self._session.execute(stmt)
+
+
+    async def get_by_short(self, short: Short) -> Link:
+        statement = select(LinkORM).where(LinkORM.short == short.value)
+        result = await self._session.execute(statement)
+        link_orm = result.scalar_one_or_none()
+
+        if link_orm is None:
+            raise ShortLinkNotFound()
+        
+        return link_orm.to_entity()
+    
+
+    async def is_short_taken(self, short: Short) -> bool:
+        statement = select(LinkORM).where(LinkORM.short == short.value)
+        result = await self._session.execute(statement)
+        link_orm = result.scalar_one_or_none()
+
+        return link_orm is not None
 
 
     async def list(self,
@@ -83,7 +91,6 @@ class PostgresLinkRepository(AbstractLinkRepository):
         has_redirect_limit: Optional[bool] = None,
     ) -> list[Link]:
         expression = []
-
 
         if user_id is not None:
             expression.append(LinkORM.user_id == user_id.value)
@@ -113,8 +120,3 @@ class PostgresLinkRepository(AbstractLinkRepository):
             return []
 
         return [scalar.to_entity() for scalar in scalars]
-
-
-    async def delete(self, entity: Link) -> None:
-        stmt = delete(LinkORM).where(LinkORM.id == entity.link_id.value)
-        await self._session.execute(stmt)

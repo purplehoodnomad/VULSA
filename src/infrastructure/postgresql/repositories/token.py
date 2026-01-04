@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete as sql_delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,9 +7,8 @@ from infrastructure.postgresql.exceptions import handle_unique_integrity_error
 
 from domain.token.repository import AbstractTokenRepository
 from domain.token.entity import Token
-from domain.token.exceptions import TokenDoesNotExistException
-from domain.user.entity import User
-from domain.value_objects.token import Token as TokenVO
+from domain.token.exceptions import TokenNotFound
+from domain.value_objects.token import TokenVO
 from domain.value_objects.common import UserId
 
 
@@ -24,7 +23,7 @@ class PostgresTokenRepository(AbstractTokenRepository):
         try:
             await self._session.flush()
         except IntegrityError as e:
-            handle_unique_integrity_error(e, entity=entity)
+            handle_unique_integrity_error(e)
         
         return token_orm.to_entity()
 
@@ -32,19 +31,20 @@ class PostgresTokenRepository(AbstractTokenRepository):
     async def update(self, entity: Token) -> Token:
         token_orm = await self._session.get(TokenORM, entity.token_id.value)
         if token_orm is None:
-            raise TokenDoesNotExistException(token_id=entity.token_id.value)
+            raise TokenNotFound()
 
-        token_orm.access_token = entity.access_token.value
-        token_orm.access_token_expires_at = entity.access_token_expires_at
-        token_orm.refresh_token = entity.refresh_token.value
-        token_orm.refresh_token_expires_at = entity.refresh_token_expires_at
-
+        token_orm.update_from_entity(entity)
         try:
             await self._session.flush()
         except IntegrityError as e:
-            handle_unique_integrity_error(e, entity=entity)
+            handle_unique_integrity_error(e)
 
         return token_orm.to_entity()
+
+
+    async def delete(self, entity: Token) -> None:
+        stmt = sql_delete(TokenORM).where(TokenORM.id == entity.token_id.value)
+        await self._session.execute(stmt)
 
 
     async def get_latest_for_user(self, user_id: UserId) -> Token | None:
@@ -64,7 +64,7 @@ class PostgresTokenRepository(AbstractTokenRepository):
         
         token_orm = result.scalar_one_or_none()
         if token_orm is None:
-            raise TokenDoesNotExistException(access_token=access_token.value)
+            raise TokenNotFound()
 
         return token_orm.to_entity()
 
@@ -75,6 +75,6 @@ class PostgresTokenRepository(AbstractTokenRepository):
         
         token_orm = result.scalar_one_or_none()
         if token_orm is None:
-            raise TokenDoesNotExistException(refresh_token=refresh_token.value)
+            raise TokenNotFound()
 
         return token_orm.to_entity()

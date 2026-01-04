@@ -1,6 +1,6 @@
 from infrastructure.uow.auth import AbstractAuthUnitOfWork
 
-from domain.value_objects.token import Token as TokenVO
+from domain.value_objects.token import TokenVO
 from usecase.auth.utils.dto import TokenDTO
 
 from .abstract import AbstractRefreshAccessTokenUseCase

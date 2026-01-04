@@ -15,7 +15,7 @@ class PostgresLinkRedirectUseCase(AbstractLinkRedirectUseCase):
         short: str
     ) -> LinkDTO:
         async with self.uow as uow:
-            link = await uow.link_repo.get_by_short(Short(short)) # type: ignore
+            link = await uow.link_repo.get_by_short(Short(short))
             link.consume_redirect()
-            redirected_link = await uow.link_repo.update(link) # type: ignore
+            redirected_link = await uow.link_repo.update(link)
             return LinkDTO.from_entity(redirected_link)

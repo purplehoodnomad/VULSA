@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime, timezone
 
-from domain.link.exceptions import UnprocessableShortLinkException
+from domain.link.exceptions import ShortLinkInactive, ShortLinkExpired, ShortLinkRedirectLimitReached
 
 from domain.value_objects.common import (
     LinkId,
@@ -26,7 +26,7 @@ class Link:
         created_at: datetime,
         times_used: int,
         is_active: bool,
-        redirect_limit: Optional[RedirectLimit] = None,
+        redirect_limit: RedirectLimit = RedirectLimit(None),
         expires_at: Optional[datetime] = None,
     ):
         self._link_id = link_id
@@ -61,7 +61,7 @@ class Link:
         return self._short
     
     @property
-    def redirect_limit(self) -> RedirectLimit | None:
+    def redirect_limit(self) -> RedirectLimit:
         return self._redirect_limit
     
     @property
@@ -85,7 +85,7 @@ class Link:
         user_id: UserId,
         long: Long,
         short: Optional[Short],
-        redirect_limit: Optional[RedirectLimit],
+        redirect_limit: RedirectLimit = RedirectLimit(None),
         expires_at: Optional[datetime] = None,
     ) -> "Link":
         """Creates Link entity"""
@@ -107,13 +107,12 @@ class Link:
 
 
     def consume_redirect(self) -> None:
-        """Raises UnprocessableShortLinkException if link doesn't meet redirect criteria"""
         if self.expires_at is not None and self.expires_at < datetime.now(timezone.utc):
-            raise UnprocessableShortLinkException(self.short.value)
-        if self.redirect_limit is not None and self.redirect_limit.value <= self.times_used:
-            raise UnprocessableShortLinkException(self.short.value)
+            raise ShortLinkExpired()
+        if self.redirect_limit.value is not None and self.redirect_limit.value <= self.times_used:
+            raise ShortLinkRedirectLimitReached()
         if not self.is_active:
-            raise UnprocessableShortLinkException(self.short.value)
+            raise ShortLinkInactive()
         
         self._times_used += 1
     
@@ -130,7 +129,7 @@ class Link:
         self._expires_at = new_date
     
     def change_redirect_limit(self, redirect_limit: RedirectLimit) -> None:
-        if redirect_limit.value < self._times_used:
+        if redirect_limit.value is not None and redirect_limit.value < self._times_used:
             raise ValueError("Redirect limit can't be less than total redirect count")
         self._redirect_limit = redirect_limit
     

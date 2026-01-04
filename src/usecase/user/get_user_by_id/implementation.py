@@ -18,6 +18,6 @@ class PostgresGetUserByIdUseCase(AbstractGetUserByIdUseCase):
         user_id: UUID
     ) -> UserDTO:
         async with self.uow as uow:
-            user = await uow.user_repo.get(UserId(user_id)) # type: ignore
+            user = await uow.user_repo.get(UserId(user_id))
             
             return UserDTO.from_entity(user)

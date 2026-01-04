@@ -1,4 +1,3 @@
-from typing import Optional
 from datetime import datetime
 
 from argon2 import PasswordHasher
@@ -8,6 +7,8 @@ from utils.enums import UserStatus
 
 from domain.value_objects.common import UserId
 from domain.value_objects.user import Email, HashedPassword
+
+from .exceptions import InvalidPassword, UserEmailMismatch
 
 
 class User:
@@ -76,8 +77,12 @@ class User:
     def change_password(self, plain_password: str) -> None:
         self._hashed_password = HashedPassword(self._password_hasher.hash(plain_password))
 
-    def check_password(self, plain_password: str) -> bool:
+    def validate_password(self, plain_password: str) -> None:
         try:
-            return self._password_hasher.verify(self._hashed_password.value, plain_password)
+            self._password_hasher.verify(self._hashed_password.value, plain_password)
         except VerifyMismatchError:
-            return False
+            raise InvalidPassword()
+        
+    def validate_email(self, email: Email) -> None:
+        if email != self.email:
+            raise UserEmailMismatch()

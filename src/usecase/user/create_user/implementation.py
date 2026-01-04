@@ -18,5 +18,5 @@ class PostgresCreateUserUseCase(AbstractCreateUserUseCase):
             entity = dto.to_entity()
             entity.change_password(dto.password)
             
-            created_user = await uow.user_repo.create(entity) # type: ignore
+            created_user = await uow.user_repo.create(entity)
             return UserDTO.from_entity(created_user)

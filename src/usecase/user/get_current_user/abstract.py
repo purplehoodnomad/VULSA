@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from domain.value_objects.token import Token as TokenVO
+from domain.value_objects.token import TokenVO
 from usecase.user.utils.dto import UserDTO
 
 

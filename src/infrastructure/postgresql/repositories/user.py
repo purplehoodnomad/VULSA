@@ -12,9 +12,8 @@ from domain.user.entity import User
 
 from domain.value_objects.common import UserId
 from domain.value_objects.user import Email
-from domain.value_objects.token import Token as TokenVO
 
-from domain.user.exceptions import UserDoesNotExistException, EmailDoesNotExistException
+from domain.user.exceptions import UserNotFound, UserEmailNotFound
 
 
 class PostgresUserRepository(AbstractUserRepository):
@@ -28,9 +27,22 @@ class PostgresUserRepository(AbstractUserRepository):
         try:
             await self._session.flush()
         except IntegrityError as e:
-            handle_unique_integrity_error(e, entity=entity)
+            handle_unique_integrity_error(e)
         
         return user_orm.to_entity()
+
+
+    async def update(self, entity: User) -> User:
+        ...
+
+
+    async def delete(self, entity: User) -> None:
+        await self.delete_by_id(entity.user_id)
+
+
+    async def delete_by_id(self, user_id: UserId) -> None:
+        stmt = delete(UserORM).where(UserORM.id == user_id.value)
+        await self._session.execute(stmt)
 
 
     async def get(self, user_id: UserId) -> User:
@@ -38,28 +50,17 @@ class PostgresUserRepository(AbstractUserRepository):
         user_orm = await self._session.get(UserORM, user_id.value)
 
         if user_orm is None:
-            raise UserDoesNotExistException(user_id.value)
+            raise UserNotFound()
 
         return user_orm.to_entity()
     
 
     async def get_by_email(self, email: Email) -> User:
-        """Raises EmailDoesNotExistException if no user with email found"""
         stmt = select(UserORM).where(UserORM.email == email.value)
         result = await self._session.execute(stmt)
 
         scalar = result.scalar_one_or_none()
         if scalar is None:
-            raise EmailDoesNotExistException(email.value)
+            raise UserEmailNotFound()
         
         return scalar.to_entity()
-
-    
-
-    async def delete(self, user_id: UserId) -> None:
-        stmt = delete(UserORM).where(UserORM.id == user_id.value)
-        await self._session.execute(stmt)
-    
-
-    async def find_user_by_access_token(self, access_token: TokenVO) -> User:
-        ...
