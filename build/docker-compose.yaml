@@ -1,16 +1,16 @@
 services:
   db:
     image: postgres:16-bullseye
-    container_name: my_first_postgres
+    container_name: vulsa_postgres
     env_file:
       - ../build/.env
     ports:
-      - "5433:5432" # снаружи подключаемся по 5433. Внутри используется 5432
+      - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data # постоянные данные БД
       - ./init:/docker-entrypoint-initdb.d # опциональные скрипты первого запуска
     networks:
-      - wow_net
+      - vulsa_net
   
   # app:
   #   build:
@@ -22,11 +22,11 @@ services:
   #   ports:
   #     - "8000:8000"
   #   networks:
-  #     - wow_net
+  #     - vulsa_net
 
 volumes:
   db_data:
 
 networks:
-  wow_net:
+  vulsa_net:
     driver: bridge

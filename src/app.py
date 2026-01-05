@@ -26,7 +26,7 @@ container.wire(
 async def lifespan(app: FastAPI):
     sessionmanager = container.session_manager()
 
-    sessionmanager.init("postgresql+asyncpg://user:password@localhost:5433/backend_course")
+    sessionmanager.init("postgresql+asyncpg://user:password@localhost:5433/vulsa_db")
     # sessionmanager.init("postgresql+asyncpg://user:password@db:5432/backend_course")
 
     async with sessionmanager.connect() as connection:
