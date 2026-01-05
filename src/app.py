@@ -27,11 +27,12 @@ async def lifespan(app: FastAPI):
     sessionmanager = container.session_manager()
 
     sessionmanager.init("postgresql+asyncpg://user:password@localhost:5433/vulsa_db")
-    # sessionmanager.init("postgresql+asyncpg://user:password@db:5432/backend_course")
+    # sessionmanager.init("postgresql+asyncpg://user:password@db:5432/vulsa_db")
 
     async with sessionmanager.connect() as connection:
+        pass
         # await sessionmanager.drop_all(connection)
-        await sessionmanager.create_all(connection) 
+        # await sessionmanager.create_all(connection) 
 
     try:
         yield
