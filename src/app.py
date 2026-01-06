@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+import asyncpg
 
 from api.v1 import routers as api_v1
 from redirect import routers as redirect
@@ -26,18 +27,21 @@ container.wire(
 async def lifespan(app: FastAPI):
     sessionmanager = container.session_manager()
 
+    pool = await asyncpg.create_pool(
+        dsn="postgresql://user:password@localhost:5433/vulsa_db",
+        min_size=1,
+        max_size=10
+    )
+    app.state.db_pool = pool
+
     sessionmanager.init("postgresql+asyncpg://user:password@localhost:5433/vulsa_db")
     # sessionmanager.init("postgresql+asyncpg://user:password@db:5432/vulsa_db")
-
-    async with sessionmanager.connect() as connection:
-        pass
-        # await sessionmanager.drop_all(connection)
-        # await sessionmanager.create_all(connection) 
 
     try:
         yield
 
     finally:
+        await pool.close()
         await sessionmanager.close()
     
 
