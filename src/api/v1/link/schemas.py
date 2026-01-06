@@ -1,10 +1,8 @@
-from typing import Optional, Annotated
+from typing import Optional
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, HttpUrl, Field, BeforeValidator
-
-from config.config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
+from pydantic import BaseModel, HttpUrl, Field
 
 
 class LinkCreateSchema(BaseModel):

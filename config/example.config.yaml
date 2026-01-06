@@ -1,0 +1,13 @@
+app:
+  name: "VULSA"
+  host: "0.0.0.0"
+  port: 8000
+  secret_key: "secret"
+  debug: false
+
+database:
+  user: "user"
+  password: "password"
+  host: "localhost"
+  port: 5433
+  name: "postgres"

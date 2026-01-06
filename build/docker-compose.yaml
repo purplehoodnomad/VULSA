@@ -3,7 +3,7 @@ services:
     image: postgres:16-bullseye
     container_name: vulsa_postgres
     env_file:
-      - ../build/.env
+      - ../config/.env
     ports:
       - "5433:5432"
     volumes:

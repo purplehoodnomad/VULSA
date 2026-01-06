@@ -27,3 +27,6 @@ env/
 # OS-specific
 .DS_Store
 Thumbs.db
+
+# Config
+config/config.yaml

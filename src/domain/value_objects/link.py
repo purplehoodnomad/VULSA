@@ -3,8 +3,6 @@ import secrets, string
 import validators
 from re import fullmatch
 
-from config.config import MIN_SHORT_LINK_LENGTH, MAX_SHORT_LINK_LENGTH
-
 from domain.exceptions import InvalidValue
 
 
@@ -27,12 +25,15 @@ class Long:
 class Short:
     value: str
 
-    @staticmethod
-    def generate(length: int = MAX_SHORT_LINK_LENGTH) -> "Short":
+    MIN_SHORT_LINK_LENGTH = 2
+    MAX_SHORT_LINK_LENGTH = 32
+
+    @classmethod
+    def generate(cls, length: int = MAX_SHORT_LINK_LENGTH) -> "Short":
         """
         Generates short link suffix of max available size by default.
         """
-        size = MAX_SHORT_LINK_LENGTH if length > MAX_SHORT_LINK_LENGTH or length < MIN_SHORT_LINK_LENGTH or length <= 0 else length
+        size = cls.MAX_SHORT_LINK_LENGTH if length > cls.MAX_SHORT_LINK_LENGTH or length < cls.MIN_SHORT_LINK_LENGTH or length <= 0 else length
         return Short(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(size)).lower())
 
     def __post_init__(self):

@@ -6,6 +6,7 @@ import asyncpg
 from api.v1 import routers as api_v1
 from redirect import routers as redirect
 from container import Container
+from settings import settings
 
 from domain.exceptions import DomainException
 from api.v1.exceptions import domain_exception_handler
@@ -26,16 +27,16 @@ container.wire(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     sessionmanager = container.session_manager()
+    s = settings.database
 
     pool = await asyncpg.create_pool(
-        dsn="postgresql://user:password@localhost:5433/vulsa_db",
+        dsn=f"postgresql://{s.user}:{s.password.get_secret_value()}@{s.host}:{s.port}/{s.name}",
         min_size=1,
         max_size=10
     )
     app.state.db_pool = pool
 
-    sessionmanager.init("postgresql+asyncpg://user:password@localhost:5433/vulsa_db")
-    # sessionmanager.init("postgresql+asyncpg://user:password@db:5432/vulsa_db")
+    sessionmanager.init(settings.database.get_database_url())
 
     try:
         yield
