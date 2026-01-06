@@ -24,3 +24,8 @@ class InvalidPassword(DomainException):
 class UserEmailMismatch(DomainException):
     code = "USER_EMAIL_MISMATCH"
     message = "Given email does not match user's" 
+
+
+class ShortLinkAccessDenied(DomainException):
+    code = "SHORT_LINK_ACCESS_DENIED"
+    message = "Access to this short link is denied"

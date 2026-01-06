@@ -24,8 +24,3 @@ class ShortLinkRedirectLimitReached(DomainException):
 class ShortLinkInactive(DomainException):
     code = "SHORT_LINK_INACTIVE"
     message = "Short link is temporarily deactivated by it's owner"
-
-
-class ShortLinkAccessDenied(DomainException):
-    code = "SHORT_LINK_ACCESS_DENIED"
-    message = "Access to this short link is denied"

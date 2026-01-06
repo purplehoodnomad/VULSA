@@ -5,10 +5,11 @@ from argon2.exceptions import VerifyMismatchError
 
 from utils.enums import UserStatus
 
+from domain.link.entity import Link
 from domain.value_objects.common import UserId
 from domain.value_objects.user import Email, HashedPassword
 
-from .exceptions import InvalidPassword, UserEmailMismatch
+from .exceptions import InvalidPassword, UserEmailMismatch, ShortLinkAccessDenied
 
 
 class User:
@@ -86,3 +87,7 @@ class User:
     def validate_email(self, email: Email) -> None:
         if email != self.email:
             raise UserEmailMismatch()
+    
+    def validate_link_ownership(self, entity: Link) -> None:
+        if entity.user_id != self.user_id:
+            raise ShortLinkAccessDenied()

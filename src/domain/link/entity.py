@@ -1,6 +1,7 @@
 from typing import Optional
 from datetime import datetime, timezone
 
+from domain.exceptions import InvalidValue
 from domain.link.exceptions import ShortLinkInactive, ShortLinkExpired, ShortLinkRedirectLimitReached
 
 from domain.value_objects.common import (
@@ -123,14 +124,13 @@ class Link:
         self._short = short
     
     def change_expiration_date(self, new_date: datetime) -> None:
-        """Raises ValueError if expiration date older than current time"""
         if new_date < datetime.now(timezone.utc):
-            raise ValueError("Expiration date can't be set to past")
+            raise InvalidValue("Expiration date can't be set to past")
         self._expires_at = new_date
     
     def change_redirect_limit(self, redirect_limit: RedirectLimit) -> None:
         if redirect_limit.value is not None and redirect_limit.value < self._times_used:
-            raise ValueError("Redirect limit can't be less than total redirect count")
+            raise InvalidValue("Redirect limit can't be less than total redirect count")
         self._redirect_limit = redirect_limit
     
     def activate(self) -> None:

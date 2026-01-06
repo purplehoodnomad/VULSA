@@ -5,7 +5,7 @@ from infrastructure.uow.link import AbstractLinkUnitOfWork
 from domain.value_objects.common import UserId
 from domain.value_objects.link import Long, Short, RedirectLimit
 
-from domain.link.exceptions import ShortLinkAlreadyExists, ShortLinkAccessDenied
+from domain.link.exceptions import ShortLinkAlreadyExists
 
 from usecase.link.utils.dto import LinkDTO, LinkUpdateDTO
 
@@ -26,8 +26,8 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
         async with self.uow as uow:
             user = await uow.user_repo.get(UserId(user_id))
             link = await uow.link_repo.get_by_short(Short(short))
-            if link.user_id.value != user.user_id.value:
-                raise ShortLinkAccessDenied()
+            
+            user.validate_link_ownership(link)
             
             if dto.long is not None:
                 link.change_long(Long(dto.long))
