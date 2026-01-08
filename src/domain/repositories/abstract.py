@@ -12,7 +12,7 @@ class AbstractRepository(Generic[TEntity], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, entity: TEntity) -> TEntity:
+    async def update(self, entity: TEntity) -> None:
         raise NotImplementedError
 
     @abstractmethod

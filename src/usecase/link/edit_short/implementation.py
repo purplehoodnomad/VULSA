@@ -47,5 +47,5 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
             if dto.is_active is not None:
                 link.activate() if dto.is_active else link.deactivate()
             
-            updated_link = await uow.link_repo.update(link)
-            return LinkDTO.from_entity(updated_link)
+            await uow.link_repo.update(link)
+            return LinkDTO.from_entity(link)

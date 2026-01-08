@@ -1,6 +1,7 @@
 from typing import Optional
 from datetime import datetime, timezone
 
+from domain.link.events import LinkClickEvent
 from domain.exceptions import InvalidValue
 from domain.link.exceptions import ShortLinkInactive, ShortLinkExpired, ShortLinkRedirectLimitReached
 
@@ -13,6 +14,7 @@ from domain.value_objects.link import (
     Short,
     RedirectLimit
 )
+from domain.value_objects.click import ClickMetadata
 
 
 class Link:
@@ -39,6 +41,8 @@ class Link:
         self._created_at = created_at
         self._times_used = times_used
         self._is_active = is_active
+
+        self._events: list[LinkClickEvent] = []
 
     def __eq__(self, obj: object) -> bool:
         if isinstance(obj, Link):
@@ -80,6 +84,10 @@ class Link:
     @property
     def is_active(self) -> bool:
         return self._is_active
+
+    @property
+    def events(self) -> list:
+        return self._events
     
     @staticmethod
     def create(*,
@@ -107,7 +115,13 @@ class Link:
     )
 
 
-    def consume_redirect(self) -> None:
+    def pull_events(self) -> list[LinkClickEvent]:
+        events = self._events.copy()
+        self._events.clear()
+        return events
+    
+
+    def consume_redirect(self, metadata: ClickMetadata) -> None:
         if self.expires_at is not None and self.expires_at < datetime.now(timezone.utc):
             raise ShortLinkExpired()
         if self.redirect_limit.value is not None and self.redirect_limit.value <= self.times_used:
@@ -116,6 +130,18 @@ class Link:
             raise ShortLinkInactive()
         
         self._times_used += 1
+        self._events.append(
+            LinkClickEvent(
+                link_id=self.link_id,
+                short=self.short,
+                timestamp=datetime.now(timezone.utc),
+                ip=metadata.ip,
+                user_agent=metadata.user_agent,
+                referer=metadata.referer,
+                request_url=metadata.request_url
+            )
+        )
+
     
     def change_long(self, long: Long) -> None:
         self._long = long

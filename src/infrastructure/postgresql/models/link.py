@@ -24,6 +24,7 @@ class LinkORM(Base):
     __tablename__ = "link"
 
     user: Mapped["UserORM"] = relationship("UserORM", back_populates="links", passive_deletes=True) # type: ignore
+    clicks: Mapped[list["ClickStampORM"]] = relationship(back_populates="link", cascade="all, delete, delete-orphan") # type: ignore
 
     user_id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),
@@ -43,7 +44,7 @@ class LinkORM(Base):
     )
 
     short: Mapped[str] = mapped_column(
-        String(16),
+        String(128),
         unique=True,
         index=True
     )

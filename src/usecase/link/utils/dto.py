@@ -50,7 +50,7 @@ class LinkCreateDTO:
                 long=Long(self.long),
                 short=Short(self.short) if self.short else None,
                 expires_at=self.expires_at,
-                redirect_limit=RedirectLimit(self.redirect_limit) if self.redirect_limit is not None else None
+                redirect_limit=RedirectLimit(self.redirect_limit)
             )
 
 

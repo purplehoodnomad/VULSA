@@ -11,6 +11,10 @@ from settings import settings
 from domain.exceptions import DomainException
 from api.v1.exceptions import domain_exception_handler
 
+from usecase.common.event_bus import EventBus
+from domain.link.events import LinkClickEvent
+from usecase.redirect.utils.handlers import LinkVisitedHandler
+
 
 container = Container()
 container.wire(
@@ -27,17 +31,25 @@ container.wire(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     sessionmanager = container.session_manager()
+    
     s = settings.database
-
     pool = await asyncpg.create_pool(
         dsn=f"postgresql://{s.user}:{s.password.get_secret_value()}@{s.host}:{s.port}/{s.name}",
         min_size=1,
         max_size=10
     )
     app.state.db_pool = pool
+    
+    from factory import make_link_uow_factory
+    link_uow_factory = make_link_uow_factory(sessionmanager, container)
+
+    bus = EventBus()
+
+    bus.subscribe(LinkClickEvent, LinkVisitedHandler(uow_factory=link_uow_factory))
+    
+    app.state.event_bus = bus
 
     sessionmanager.init(settings.database.get_database_url())
-
     try:
         yield
 

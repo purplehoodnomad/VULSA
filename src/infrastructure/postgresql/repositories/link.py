@@ -34,7 +34,7 @@ class PostgresLinkRepository(AbstractLinkRepository):
         return link_orm.to_entity()
 
 
-    async def update(self, entity: Link) -> Link:
+    async def update(self, entity: Link) -> None:
         link_orm = await self._session.get(LinkORM, entity.link_id.value)
         if link_orm is None:
             raise ShortLinkNotFound()
@@ -51,8 +51,6 @@ class PostgresLinkRepository(AbstractLinkRepository):
             await self._session.flush()
         except IntegrityError as e:
             handle_unique_integrity_error(e)
-        
-        return link_orm.to_entity()
 
 
     async def delete(self, entity: Link) -> None:
