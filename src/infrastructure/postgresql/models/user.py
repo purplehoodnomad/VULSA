@@ -8,8 +8,6 @@ from sqlalchemy import UUID as UUIDAlchemy
 
 from infrastructure.sqlalchemy.base import Base
 
-from utils.enums import UserStatus
-
 from domain.user.entity import User
 from domain.value_objects.common import UserId
 from domain.value_objects.user import Email, HashedPassword
