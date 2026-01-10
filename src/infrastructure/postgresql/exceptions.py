@@ -2,6 +2,7 @@ from sqlalchemy.exc import IntegrityError
 
 from domain.user.exceptions import UserEmailAlreadyExists
 from domain.link.exceptions import ShortLinkAlreadyExists
+from domain.role.exceptions import RoleAlreadyExists
 
 
 PG_UNIQUE_VIOLATION = "23505"
@@ -9,7 +10,8 @@ PG_UNIQUE_VIOLATION = "23505"
 
 _UNIQUE_CONSTRAINT_MAP = {
     "ix_user_email": UserEmailAlreadyExists,
-    "ix_link_short": ShortLinkAlreadyExists
+    "ix_link_short": ShortLinkAlreadyExists,
+    "ix_role_name": RoleAlreadyExists
 }
 
 def handle_unique_integrity_error(error: IntegrityError) -> None:

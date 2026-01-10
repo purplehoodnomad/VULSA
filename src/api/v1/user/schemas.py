@@ -3,13 +3,12 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, model_validator
 
-from utils.enums import UserStatus
-
 
 class UserCreateSchema(BaseModel):
     email: EmailStr
     password: str
     password_repeated: str
+    role: str
 
     @model_validator(mode="after")
     def passwords_match(self):
@@ -21,7 +20,7 @@ class UserCreateSchema(BaseModel):
 class UserSchema(BaseModel):
     user_id: UUID
     email: EmailStr
-    status: UserStatus
+    role: str
     created_at: datetime
 
 

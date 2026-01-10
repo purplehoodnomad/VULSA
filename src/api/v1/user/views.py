@@ -29,6 +29,7 @@ async def create_user(
     dto = UserCreateDTO(
         email=str(payload.email),
         password=payload.password,
+        role=payload.role
     )
     created_user_dto = await usecase.execute(dto)
     

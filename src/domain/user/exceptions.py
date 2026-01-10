@@ -29,3 +29,7 @@ class UserEmailMismatch(DomainException):
 class ShortLinkAccessDenied(DomainException):
     code = "SHORT_LINK_ACCESS_DENIED"
     message = "Access to this short link is denied"
+
+class NotAdminError(DomainException):
+    code = "NOT_ADMIN_ERROR"
+    message = "User has no admin role to perfrom request"

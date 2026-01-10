@@ -3,13 +3,12 @@ from datetime import datetime
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
-from utils.enums import UserStatus
-
 from domain.link.entity import Link
 from domain.value_objects.common import UserId
 from domain.value_objects.user import Email, HashedPassword
+from domain.value_objects.role import RoleName, Permission
 
-from .exceptions import InvalidPassword, UserEmailMismatch, ShortLinkAccessDenied
+from .exceptions import InvalidPassword, UserEmailMismatch, ShortLinkAccessDenied, NotAdminError
 
 
 class User:
@@ -22,13 +21,13 @@ class User:
         user_id: UserId,
         email: Email,
         hashed_password: HashedPassword,
-        status: UserStatus,
+        role: RoleName,
         created_at: datetime
     ):
         self._user_id = user_id
         self._email = email
         self._hashed_password = hashed_password
-        self._status = status
+        self._role = role
         self._created_at = created_at
 
 
@@ -50,8 +49,8 @@ class User:
         return self._hashed_password
     
     @property
-    def status(self) -> UserStatus:
-        return self._status
+    def role(self) -> RoleName:
+        return self._role
     
     @property
     def created_at(self) -> datetime:
@@ -62,7 +61,7 @@ class User:
     def create(*,
         email: Email,
         hashed_password: HashedPassword,
-        status: UserStatus = UserStatus.USER,
+        role: RoleName
     ) -> "User":
         """Creates User entity"""
         user_id = UserId.generate()
@@ -71,7 +70,7 @@ class User:
             user_id=user_id,
             email=email,
             hashed_password=hashed_password,
-            status=status,
+            role=role,
             created_at=datetime.now()
         )
 
@@ -91,3 +90,7 @@ class User:
     def validate_link_ownership(self, entity: Link) -> None:
         if entity.user_id != self.user_id:
             raise ShortLinkAccessDenied()
+    
+    def validate_admin(self) -> None:
+        if self.role.value != "admin":
+            raise NotAdminError()

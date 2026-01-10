@@ -4,6 +4,10 @@ from usecase.user.utils.dto import UserDTO, UserCreateDTO
 
 from .abstract import AbstractCreateUserUseCase
 
+from domain.user.entity import User
+from domain.value_objects.user import Email, HashedPassword
+from domain.value_objects.role import RoleName
+
 
 class PostgresCreateUserUseCase(AbstractCreateUserUseCase):
     def __init__(self, uow: AbstractUserUnitOfWork):
@@ -14,9 +18,14 @@ class PostgresCreateUserUseCase(AbstractCreateUserUseCase):
         dto: UserCreateDTO
     ) -> UserDTO:
         async with self.uow as uow:
-
-            entity = dto.to_entity()
-            entity.change_password(dto.password)
+            role_entity = await self.uow.role_repo.get(RoleName(dto.role))
             
-            created_user = await uow.user_repo.create(entity)
-            return UserDTO.from_entity(created_user)
+            user_entity = User.create(
+                email=Email(dto.email),
+                hashed_password=HashedPassword(""),
+                role=role_entity.name
+            )
+            user_entity.change_password(dto.password)
+            await uow.user_repo.create(user_entity)
+
+            return UserDTO.from_entity(user_entity)

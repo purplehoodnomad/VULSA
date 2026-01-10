@@ -5,6 +5,6 @@ def dto_to_schema(dto: UserDTO) -> UserSchema:
     return UserSchema(
         user_id=dto.user_id,
         email=dto.email,
-        status=dto.status,
+        role=dto.role,
         created_at=dto.created_at
     )
