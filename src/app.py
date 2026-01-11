@@ -7,6 +7,7 @@ from api.v1 import routers as api_v1
 from redirect import routers as redirect
 from container import Container
 from settings import settings
+from factory import make_link_uow_factory
 
 from domain.exceptions import DomainException
 from api.v1.exceptions import domain_exception_handler
@@ -40,13 +41,10 @@ async def lifespan(app: FastAPI):
     )
     app.state.db_pool = pool
     
-    from factory import make_link_uow_factory
     link_uow_factory = make_link_uow_factory(sessionmanager, container)
-
     bus = EventBus()
-
     bus.subscribe(LinkClickEvent, LinkVisitedHandler(uow_factory=link_uow_factory))
-    
+
     app.state.event_bus = bus
 
     sessionmanager.init(settings.database.get_database_url())
