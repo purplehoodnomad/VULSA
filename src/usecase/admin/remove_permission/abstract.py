@@ -1,15 +1,9 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
 
-from usecase.admin.utils.dto import RoleDTO
+from usecase.admin.utils.dto import RoleDTO, EditPermissionDTO
 
 
 class AbstractRemovePermissionUseCase(ABC):
     @abstractmethod
-    async def execute(
-        self,
-        user_id: UUID,
-        role: str,
-        permission: str,
-    ) -> RoleDTO:
+    async def execute(self, dto: EditPermissionDTO) -> RoleDTO:
         raise NotImplementedError

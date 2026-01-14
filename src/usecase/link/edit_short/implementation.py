@@ -16,16 +16,10 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
     def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
 
-    async def execute(
-        self,
-        *,
-        user_id: UUID,
-        short: str,
-        dto: LinkUpdateDTO
-    ) -> LinkDTO:
+    async def execute(self, dto: LinkUpdateDTO) -> LinkDTO:
         async with self.uow as uow:
-            user = await uow.user_repo.get(UserId(user_id))
-            link = await uow.link_repo.get_by_short(Short(short))
+            user = await uow.user_repo.get(UserId(dto.user_id))
+            link = await uow.link_repo.get_by_short(Short(dto.short))
             
             user.validate_link_ownership(link)
             

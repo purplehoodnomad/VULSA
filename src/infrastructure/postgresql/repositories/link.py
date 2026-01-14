@@ -22,7 +22,7 @@ class PostgresLinkRepository(AbstractLinkRepository):
         self._session: AsyncSession = session
     
 
-    async def create(self, entity: Link) -> Link:
+    async def create(self, entity: Link) -> None:
         link_orm = LinkORM.from_entity(entity)
 
         self._session.add(link_orm)
@@ -30,8 +30,6 @@ class PostgresLinkRepository(AbstractLinkRepository):
             await self._session.flush()
         except IntegrityError as e:
             handle_unique_integrity_error(e)
-        
-        return link_orm.to_entity()
 
 
     async def update(self, entity: Link) -> None:

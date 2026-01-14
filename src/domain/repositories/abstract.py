@@ -3,12 +3,11 @@ from typing import Generic, TypeVar
 
 
 TEntity = TypeVar("TEntity")
-# TId = TypeVar("TId")
 
 
 class AbstractRepository(Generic[TEntity], ABC):
     @abstractmethod
-    async def create(self, entity: TEntity) -> TEntity:
+    async def create(self, entity: TEntity) -> None:
         raise NotImplementedError
 
     @abstractmethod

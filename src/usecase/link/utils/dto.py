@@ -7,6 +7,8 @@ from domain.link.entity import Link
 from domain.value_objects.common import UserId
 from domain.value_objects.link import Short, Long, RedirectLimit
 
+from api.v1.link.schemas import LinkSchema, LinkCreateSchema, LinkUpdateSchema, LinkListQueryParams
+
 
 @dataclass(slots=True)
 class LinkDTO:
@@ -33,6 +35,19 @@ class LinkDTO:
             times_used=entity.times_used,
             is_active=entity.is_active
         )
+    
+    def to_schema(self) -> LinkSchema:
+        return LinkSchema(
+            link_id=self.link_id,
+            user_id=self.user_id,
+            long=self.long,
+            short=self.short,
+            is_active=self.is_active,
+            expires_at=self.expires_at,
+            redirect_limit=self.redirect_limit,
+            created_at=self.created_at,
+            times_used=self.times_used
+        )
 
 
 @dataclass(slots=True)
@@ -52,24 +67,61 @@ class LinkCreateDTO:
                 expires_at=self.expires_at,
                 redirect_limit=RedirectLimit(self.redirect_limit)
             )
+    
+    @staticmethod
+    def from_schema(user_id: UUID, schema: LinkCreateSchema) -> "LinkCreateDTO":
+        return LinkCreateDTO(
+            user_id=user_id,
+            long=str(schema.long),
+            short = schema.short,
+            expires_at=schema.expires_at,
+            redirect_limit=schema.redirect_limit
+        )
 
 
 @dataclass(slots=True)
 class LinkUpdateDTO:
+    user_id: UUID
+    short: str
     long: Optional[str] = None
     new_short: Optional[str] = None
     expires_at: Optional[datetime] = None
     redirect_limit: Optional[int] = None
     is_active: Optional[bool] = None
 
+    @staticmethod
+    def from_schema(user_id: UUID, short: str, schema: LinkUpdateSchema) -> "LinkUpdateDTO":  
+        return LinkUpdateDTO(
+            user_id=user_id,
+            short=short,
+            long=str(schema.long) if schema.long is not None else None,
+            new_short=schema.new_short,
+            expires_at=schema.expires_at,
+            redirect_limit=schema.redirect_limit,
+            is_active=schema.is_active
+        )
+
 
 @dataclass(slots=True)
 class LinkFilterDto:
     offset: int
     limit: int
-    user: Optional[UUID] = None
+    user_id: Optional[UUID] = None
     older_than: Optional[datetime] = None
     newer_than: Optional[datetime] = None
     active_status: Optional[bool] = None
     has_expiration_date: Optional[bool] = None
     has_redirect_limit: Optional[bool] = None
+
+    @staticmethod
+    def from_schema(user_id: UUID, schema: LinkListQueryParams) -> "LinkFilterDto":
+        return LinkFilterDto(
+            offset=schema.offset,
+            limit=schema.limit,
+            user_id=user_id,
+            older_than=schema.older_than,
+            newer_than=schema.newer_than,
+            active_status=schema.active_status,
+            has_expiration_date=schema.has_expiration_date,
+            has_redirect_limit=schema.has_redirect_limit
+        )
