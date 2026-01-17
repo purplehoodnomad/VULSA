@@ -40,7 +40,7 @@ class Short:
         if not self.value:
             raise InvalidValue("Suffix for short link is required")
         
-        if not fullmatch(r'^[a-z0-9]+$', self.value):
+        if not fullmatch(r'^[A-Za-z0-9]+$', self.value):
             raise InvalidValue(f"Invalid short link: {self.value}")
     
     def __str__(self) -> str:
