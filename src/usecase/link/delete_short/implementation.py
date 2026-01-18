@@ -1,9 +1,9 @@
 from uuid import UUID
 
 from infrastructure.uow.link import AbstractLinkUnitOfWork
-
+from usecase.common.actor import Actor
 from domain.value_objects.common import UserId
-from domain.value_objects.link import Short
+from domain.value_objects.link import Short, AnonymousEditKey
 
 from .abstract import AbstractDeleteShortUseCase
 
@@ -16,13 +16,16 @@ class PostgresDeleteShortUseCase(AbstractDeleteShortUseCase):
     async def execute(
         self,
         *,
-        user_id: UUID,
+        actor: Actor,
         short: str
     ) -> None:
         async with self.uow as uow:
-            user = await uow.user_repo.get(UserId(user_id))
-            link = await uow.link_repo.get_by_short(Short(short))
+            if actor.is_user():
+                user = await uow.user_repo.get(UserId(actor.id))
+                link = await uow.link_repo.get_by_short(Short(short))
+                user.validate_link_ownership(link)
             
-            user.validate_link_ownership(link)
-
+            if actor.is_anonymous():
+                link = await uow.link_repo.get_by_edit_key(AnonymousEditKey(actor.id))
+            
             await uow.link_repo.delete(link)

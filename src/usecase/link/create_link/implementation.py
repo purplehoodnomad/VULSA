@@ -16,4 +16,5 @@ class PostgresCreateLinkUseCase(AbstractCreateLinkUseCase):
         async with self.uow as uow:
             link = dto.to_entity()
             await uow.link_repo.create(link)
+            
             return LinkDTO.from_entity(link)

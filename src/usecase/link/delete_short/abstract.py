@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
+from usecase.common.actor import Actor
 
 
 class AbstractDeleteShortUseCase(ABC):
@@ -7,7 +7,7 @@ class AbstractDeleteShortUseCase(ABC):
     async def execute(
         self,
         *,
-        user_id: UUID,
+        actor: Actor,
         short: str
     ) -> None:
         raise NotImplementedError

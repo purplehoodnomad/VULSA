@@ -3,7 +3,8 @@ from uuid import UUID
 from fastapi import status, APIRouter, Depends
 from fastapi.responses import JSONResponse, Response
 
-from api.v1.dependencies import get_authentificated_user_id
+from api.v1.dependencies import get_actor
+from usecase.common.actor import Actor
 
 from .schemas import UserSchema, UserCreateSchema, UserDeleteSchema
 from usecase.user.utils.dto import UserCreateDTO, UserDeleteDTO
@@ -34,10 +35,11 @@ async def create_user(
 
 @router.get("/me", response_model=UserSchema)
 async def get_me(
-    user_id: UUID = Depends(get_authentificated_user_id),
+    actor: Actor = Depends(get_actor),
     usecase: AbstractGetUserByIdUseCase = Depends(get_get_user_by_id_usecase)
 ) -> JSONResponse:
-    user = await usecase.execute(user_id)
+    actor.validate_user()
+    user = await usecase.execute(actor.id) # type: ignore
     
     return JSONResponse(
         content=user.to_schema().model_dump(mode="json"),
@@ -47,10 +49,11 @@ async def get_me(
 
 @router.get("/{user_id}", response_model=UserSchema)
 async def get_user(
-    user_id: UUID,
+    actor: Actor = Depends(get_actor),
     usecase: AbstractGetUserByIdUseCase = Depends(get_get_user_by_id_usecase),
 ) -> JSONResponse:
-    user = await usecase.execute(user_id)
+    actor.validate_user()
+    user = await usecase.execute(actor.id) # type: ignore
     
     return JSONResponse(
         content=user.to_schema().model_dump(mode="json"),

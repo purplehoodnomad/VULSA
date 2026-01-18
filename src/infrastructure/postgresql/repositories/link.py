@@ -11,10 +11,10 @@ from infrastructure.postgresql.exceptions import handle_unique_integrity_error
 from domain.link.repository import AbstractLinkRepository
 
 from domain.link.entity import Link
-from domain.link.exceptions import ShortLinkNotFound
+from domain.link.exceptions import ShortLinkNotFound, AnonymousSessionNotFound
 
 from domain.value_objects.common import UserId
-from domain.value_objects.link import Short
+from domain.value_objects.link import AnonymousEditKey, Short
 
 
 class PostgresLinkRepository(AbstractLinkRepository):
@@ -37,14 +37,7 @@ class PostgresLinkRepository(AbstractLinkRepository):
         if link_orm is None:
             raise ShortLinkNotFound()
         
-        link_orm.user_id = entity.user_id.value
-        link_orm.long = entity.long.value
-        link_orm.short = entity.short.value
-        link_orm.is_active = entity.is_active
-        link_orm.redirect_limit = entity.redirect_limit.value if entity.redirect_limit is not None else None
-        link_orm.expires_at = entity.expires_at
-        link_orm.times_used = entity.times_used
-
+        link_orm.update_from_entity(entity)
         try:
             await self._session.flush()
         except IntegrityError as e:
@@ -67,6 +60,17 @@ class PostgresLinkRepository(AbstractLinkRepository):
         return link_orm.to_entity()
     
 
+    async def get_by_edit_key(self, edit_key: AnonymousEditKey) -> Link:
+        statement = select(LinkORM).where(LinkORM.edit_key == edit_key.value)
+        result = await self._session.execute(statement)
+        link_orm = result.scalar_one_or_none()
+
+        if link_orm is None:
+            raise AnonymousSessionNotFound()
+        
+        return link_orm.to_entity()
+    
+
     async def is_short_taken(self, short: Short) -> bool:
         statement = select(LinkORM).where(LinkORM.short == short.value)
         result = await self._session.execute(statement)
@@ -80,6 +84,7 @@ class PostgresLinkRepository(AbstractLinkRepository):
         offset: int,
         limit: int,
         user_id: Optional[UserId] = None,
+        edit_key: Optional[AnonymousEditKey] = None,
         older_than: Optional[datetime] = None,
         newer_than: Optional[datetime] = None,
         active_status: Optional[bool] = None,
@@ -90,6 +95,8 @@ class PostgresLinkRepository(AbstractLinkRepository):
 
         if user_id is not None:
             expression.append(LinkORM.user_id == user_id.value)
+        if edit_key is not None:
+            expression.append(LinkORM.edit_key == edit_key.value)
         if older_than is not None:
             expression.append(LinkORM.created_at < older_than)
         if newer_than is not None:

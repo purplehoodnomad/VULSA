@@ -1,25 +1,50 @@
-from uuid import UUID
+from fastapi import Request, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyHeader
 
-from fastapi import Depends, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from usecase.common.actor import Actor, ActorType
 from domain.value_objects.token import TokenVO
-
-from api.v1.user.dependencies import get_get_current_user_usecase
-from usecase.user.get_current_user.abstract import AbstractGetCurrentUserUseCase
 from usecase.common.event_bus import EventBus
 
+from infrastructure.sqlalchemy.session import get_async_session
+from infrastructure.uow.builders import get_link_uow
+from api.v1.user.dependencies import get_get_current_user_usecase
+from usecase.user.get_current_user.abstract import AbstractGetCurrentUserUseCase
+from usecase.link.get_anonymous_link.abstract import AbstractGetAnonymousLinkUseCase
+from usecase.link.get_anonymous_link.implementation import PostgresGetAnonymousLinkUseCase
 
-security_http_bearer_schema = HTTPBearer(scheme_name="Bearer", description="Access token")
 
 
-async def get_authentificated_user_id(
-        credentials: HTTPAuthorizationCredentials = Depends(security_http_bearer_schema),
-        usecase: AbstractGetCurrentUserUseCase = Depends(get_get_current_user_usecase)
-    ) -> UUID:
+def get_get_anonymous_link_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractGetAnonymousLinkUseCase:
+    uow = get_link_uow(session)
+    return PostgresGetAnonymousLinkUseCase(uow=uow)
+
+
+auth = HTTPBearer(auto_error=False)
+anon = APIKeyHeader(name="X-Edit-Key", auto_error=False)
+
+
+async def get_actor(
+    edit_key: str | None = Depends(anon),
+    credentials: HTTPAuthorizationCredentials | None = Depends(auth),
+    user_usecase: AbstractGetCurrentUserUseCase = Depends(get_get_current_user_usecase),
+    anonymous_usecase: AbstractGetAnonymousLinkUseCase = Depends(get_get_anonymous_link_usecase),
+) -> Actor:
+
+    if credentials is not None:
         access_token = credentials.credentials
-        user_dto = await usecase.execute(access_token=TokenVO(access_token))
-        return user_dto.user_id
+        dto = await user_usecase.execute(access_token=TokenVO(value=access_token))
+        
+        return Actor(id=dto.user_id, type=ActorType.USER)
+
+    if edit_key is not None:
+        dto = await anonymous_usecase.execute(edit_key)
+
+        return Actor(id=dto.owner_id, type=ActorType.ANONYMOUS)
+
+    return Actor(id=None, type=ActorType.UNAUTHORIZED)
+
 
 async def get_event_bus(request: Request) -> EventBus:
     return request.app.state.event_bus

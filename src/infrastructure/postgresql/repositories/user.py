@@ -46,7 +46,6 @@ class PostgresUserRepository(AbstractUserRepository):
 
 
     async def get(self, user_id: UserId) -> User:
-        """Raises c if no id found"""
         user_orm = await self._session.get(UserORM, user_id.value)
 
         if user_orm is None:

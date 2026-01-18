@@ -5,15 +5,8 @@ from domain.link.events import LinkClickEvent
 from domain.exceptions import InvalidValue
 from domain.link.exceptions import ShortLinkInactive, ShortLinkExpired, ShortLinkRedirectLimitReached
 
-from domain.value_objects.common import (
-    LinkId,
-    UserId
-)
-from domain.value_objects.link import (
-    Long,
-    Short,
-    RedirectLimit
-)
+from domain.value_objects.common import LinkId, UserId
+from domain.value_objects.link import Long, Short, RedirectLimit, AnonymousEditKey
 from domain.value_objects.click import ClickMetadata
 
 
@@ -23,7 +16,7 @@ class Link:
         self,
         *,
         link_id: LinkId,
-        user_id: UserId,
+        owner_id: UserId | AnonymousEditKey,
         long: Long,
         short: Short,
         created_at: datetime,
@@ -33,7 +26,7 @@ class Link:
         expires_at: Optional[datetime] = None,
     ):
         self._link_id = link_id
-        self._user_id = user_id
+        self._owner_id = owner_id
         self._long = long
         self._short = short
         self._redirect_limit = redirect_limit
@@ -54,8 +47,8 @@ class Link:
         return self._link_id
     
     @property
-    def user_id(self) -> UserId:
-        return self._user_id
+    def owner_id(self) -> UserId | AnonymousEditKey:
+        return self._owner_id
     
     @property
     def long(self) -> Long:
@@ -91,7 +84,7 @@ class Link:
     
     @staticmethod
     def create(*,
-        user_id: UserId,
+        owner_id: UserId | AnonymousEditKey,
         long: Long,
         short: Optional[Short],
         redirect_limit: RedirectLimit = RedirectLimit(None),
@@ -104,7 +97,7 @@ class Link:
 
         return Link(
             link_id=link_id,
-            user_id=user_id,
+            owner_id=owner_id,
             long=long,
             short=short,
             redirect_limit=redirect_limit,
@@ -164,3 +157,6 @@ class Link:
     
     def deactivate(self) -> None:
         self._is_active = False
+    
+    def is_anonymous(self) -> bool:
+        return isinstance(self.owner_id, AnonymousEditKey)

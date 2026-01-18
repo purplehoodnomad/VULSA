@@ -24,3 +24,8 @@ class ShortLinkRedirectLimitReached(DomainException):
 class ShortLinkInactive(DomainException):
     code = "SHORT_LINK_INACTIVE"
     message = "Short link is temporarily deactivated by it's owner"
+
+
+class AnonymousSessionNotFound(DomainException):
+    code = "ANONYMOUS_SESSION_NOT_FOUND"
+    message = "Anonymous session not found"

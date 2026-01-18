@@ -88,7 +88,7 @@ class User:
             raise UserEmailMismatch()
     
     def validate_link_ownership(self, entity: Link) -> None:
-        if entity.user_id != self.user_id:
+        if entity.owner_id != self.user_id:
             raise ShortLinkAccessDenied()
     
     def validate_admin(self) -> None:

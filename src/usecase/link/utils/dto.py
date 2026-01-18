@@ -5,7 +5,8 @@ from uuid import UUID
 
 from domain.link.entity import Link
 from domain.value_objects.common import UserId
-from domain.value_objects.link import Short, Long, RedirectLimit
+from domain.value_objects.link import Short, Long, RedirectLimit, AnonymousEditKey
+from usecase.common.actor import Actor, ActorType
 
 from api.v1.link.schemas import LinkSchema, LinkCreateSchema, LinkUpdateSchema, LinkListQueryParams
 
@@ -13,7 +14,7 @@ from api.v1.link.schemas import LinkSchema, LinkCreateSchema, LinkUpdateSchema, 
 @dataclass(slots=True)
 class LinkDTO:
     link_id: UUID
-    user_id: UUID
+    owner_id: UUID | str
     long: str
     short: str
     redirect_limit: Optional[int]
@@ -26,7 +27,7 @@ class LinkDTO:
     def from_entity(entity: Link):
         return LinkDTO(
             link_id=entity.link_id.value,
-            user_id=entity.user_id.value,
+            owner_id=entity.owner_id.value,
             long=entity.long.value,
             short=entity.short.value,
             redirect_limit=entity.redirect_limit.value if entity.redirect_limit is not None else None,
@@ -39,7 +40,7 @@ class LinkDTO:
     def to_schema(self) -> LinkSchema:
         return LinkSchema(
             link_id=self.link_id,
-            user_id=self.user_id,
+            owner_id=self.owner_id,
             long=self.long,
             short=self.short,
             is_active=self.is_active,
@@ -52,16 +53,15 @@ class LinkDTO:
 
 @dataclass(slots=True)
 class LinkCreateDTO:
-    user_id: UUID
+    actor: Actor
     long: str
     short: Optional[str]
     expires_at: Optional[datetime]
     redirect_limit: Optional[int]
 
     def to_entity(self):
-        "Converts dto into User entity with empty hashed password and USER status"
         return Link.create(
-                user_id=UserId(self.user_id),
+                owner_id=UserId(self.actor.id) if self.actor.is_user() else AnonymousEditKey.generate(), # type: ignore
                 long=Long(self.long),
                 short=Short(self.short) if self.short else None,
                 expires_at=self.expires_at,
@@ -69,9 +69,9 @@ class LinkCreateDTO:
             )
     
     @staticmethod
-    def from_schema(user_id: UUID, schema: LinkCreateSchema) -> "LinkCreateDTO":
+    def from_schema(actor: Actor, schema: LinkCreateSchema) -> "LinkCreateDTO":
         return LinkCreateDTO(
-            user_id=user_id,
+            actor=actor,
             long=str(schema.long),
             short = schema.short,
             expires_at=schema.expires_at,
@@ -81,7 +81,7 @@ class LinkCreateDTO:
 
 @dataclass(slots=True)
 class LinkUpdateDTO:
-    user_id: UUID
+    actor: Actor
     short: str
     long: Optional[str] = None
     new_short: Optional[str] = None
@@ -90,9 +90,9 @@ class LinkUpdateDTO:
     is_active: Optional[bool] = None
 
     @staticmethod
-    def from_schema(user_id: UUID, short: str, schema: LinkUpdateSchema) -> "LinkUpdateDTO":  
+    def from_schema(actor: Actor, short: str, schema: LinkUpdateSchema) -> "LinkUpdateDTO":  
         return LinkUpdateDTO(
-            user_id=user_id,
+            actor=actor,
             short=short,
             long=str(schema.long) if schema.long is not None else None,
             new_short=schema.new_short,
@@ -107,6 +107,7 @@ class LinkFilterDto:
     offset: int
     limit: int
     user_id: Optional[UUID] = None
+    edit_key: Optional[str] = None
     older_than: Optional[datetime] = None
     newer_than: Optional[datetime] = None
     active_status: Optional[bool] = None
@@ -114,11 +115,12 @@ class LinkFilterDto:
     has_redirect_limit: Optional[bool] = None
 
     @staticmethod
-    def from_schema(user_id: UUID, schema: LinkListQueryParams) -> "LinkFilterDto":
+    def from_schema(actor: Actor, schema: LinkListQueryParams) -> "LinkFilterDto":
         return LinkFilterDto(
             offset=schema.offset,
             limit=schema.limit,
-            user_id=user_id,
+            user_id=actor.id if actor.is_user() else None, # type: ignore
+            edit_key=actor.id if actor.is_anonymous() else None, # type: ignore
             older_than=schema.older_than,
             newer_than=schema.newer_than,
             active_status=schema.active_status,

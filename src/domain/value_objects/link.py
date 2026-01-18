@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import secrets, string
 import validators
 from re import fullmatch
+from secrets import token_urlsafe
 
 from domain.exceptions import InvalidValue
 
@@ -29,12 +30,12 @@ class Short:
     MAX_SHORT_LINK_LENGTH = 32
 
     @classmethod
-    def generate(cls, length: int = MAX_SHORT_LINK_LENGTH) -> "Short":
+    def generate(cls, length: int = 9) -> "Short":
         """
         Generates short link suffix of max available size by default.
         """
         size = cls.MAX_SHORT_LINK_LENGTH if length > cls.MAX_SHORT_LINK_LENGTH or length < cls.MIN_SHORT_LINK_LENGTH or length <= 0 else length
-        return Short(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(size)).lower())
+        return Short(''.join(secrets.choice(string.ascii_lowercase + string.digits + string.ascii_uppercase) for _ in range(size)))
 
     def __post_init__(self):
         if not self.value:
@@ -57,3 +58,19 @@ class RedirectLimit:
     
     def __str__(self) -> str:
         return str(self.value)
+
+
+@dataclass(frozen=True)
+class AnonymousEditKey:
+    value: str
+
+    def __post_init__(self):
+        if not self.value:
+            raise InvalidValue("Edit key is required")
+
+    def __str__(self) -> str:
+        return str(self.value)
+    
+    @staticmethod
+    def generate() -> "AnonymousEditKey":
+        return AnonymousEditKey(token_urlsafe(56))

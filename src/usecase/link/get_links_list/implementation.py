@@ -1,7 +1,7 @@
 from infrastructure.uow.link import AbstractLinkUnitOfWork
 
 from domain.value_objects.common import UserId
-
+from domain.value_objects.link import AnonymousEditKey
 from usecase.link.utils.dto import LinkDTO, LinkFilterDto
 
 from .abstract import AbstractGetLinksListUseCase
@@ -16,7 +16,8 @@ class PostgresGetLinksListUseCase(AbstractGetLinksListUseCase):
             links = await uow.link_repo.list(
                 offset=dto.offset,
                 limit=dto.limit,
-                user_id=UserId(dto.user) if dto.user is not None else None,
+                user_id=UserId(dto.user_id) if dto.user_id is not None else None,
+                edit_key=AnonymousEditKey(dto.edit_key) if dto.edit_key is not None else None,
                 older_than=dto.older_than,
                 newer_than=dto.newer_than,
                 active_status=dto.active_status,

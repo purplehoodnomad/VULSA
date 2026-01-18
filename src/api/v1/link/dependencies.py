@@ -2,8 +2,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.postgresql.di.injection import build_link_uow
-from infrastructure.postgresql.uow.link import AbstractLinkUnitOfWork
+from infrastructure.uow.builders import get_link_uow
 
 from usecase.link.create_link.abstract import AbstractCreateLinkUseCase
 from usecase.link.get_links_list.abstract import AbstractGetLinksListUseCase
@@ -14,10 +13,6 @@ from usecase.link.create_link.implementation import PostgresCreateLinkUseCase
 from usecase.link.get_links_list.implementation import PostgresGetLinksListUseCase
 from usecase.link.delete_short.implementation import PostgresDeleteShortUseCase
 from usecase.link.edit_short.implementation import PostgresEditShortLinkUseCase
-
-
-def get_link_uow(session: AsyncSession = Depends(get_async_session)) -> AbstractLinkUnitOfWork:
-    return build_link_uow(session)
 
 
 def get_link_create_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractCreateLinkUseCase:

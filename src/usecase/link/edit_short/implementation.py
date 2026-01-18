@@ -3,7 +3,7 @@ from uuid import UUID
 from infrastructure.uow.link import AbstractLinkUnitOfWork
 
 from domain.value_objects.common import UserId
-from domain.value_objects.link import Long, Short, RedirectLimit
+from domain.value_objects.link import Long, Short, RedirectLimit, AnonymousEditKey
 
 from domain.link.exceptions import ShortLinkAlreadyExists
 
@@ -18,11 +18,15 @@ class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
 
     async def execute(self, dto: LinkUpdateDTO) -> LinkDTO:
         async with self.uow as uow:
-            user = await uow.user_repo.get(UserId(dto.user_id))
-            link = await uow.link_repo.get_by_short(Short(dto.short))
+            if dto.actor.is_user():
+                user = await uow.user_repo.get(UserId(dto.actor.id)) # type: ignore
+                link = await uow.link_repo.get_by_short(Short(dto.short))
+                
+                user.validate_link_ownership(link)
             
-            user.validate_link_ownership(link)
-            
+            if dto.actor.is_anonymous():
+                link = await uow.link_repo.get_by_edit_key(AnonymousEditKey(dto.actor.id)) # type: ignore
+             
             if dto.long is not None:
                 link.change_long(Long(dto.long))
             
