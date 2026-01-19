@@ -32,7 +32,6 @@ async def create_short_link(
     actor: Actor = Depends(get_actor),
     usecase: AbstractCreateLinkUseCase = Depends(get_link_create_usecase),
 ) -> JSONResponse:
-    print(actor)
     dto = LinkCreateDTO.from_schema(actor, payload)
     link_dto = await usecase.execute(dto)
     
