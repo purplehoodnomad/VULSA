@@ -1,8 +1,12 @@
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Request
-import asyncpg
+from dependency_injector.wiring import inject, Provide
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+
+from container import Container
+from infrastructure.sqlalchemy.session_manager import DatabaseSessionManager
 
 
 router = APIRouter(prefix="/health")
@@ -17,17 +21,15 @@ async def liveness_probe() -> dict[str, Any]:
     }
 
 
-async def check_db(pool: asyncpg.Pool) -> bool:
-    async with pool.acquire() as conn:
-        await conn.execute("SELECT 1")
-    return True
-
+@inject
 @router.get("/ready")
-async def readiness_probe(request: Request) -> dict[str, Any]:
+async def readiness_probe(
+    session_manager: DatabaseSessionManager = Depends(Provide[Container.session_manager])
+) -> dict[str, Any]:
     """Checks DB connection."""
-    pool = request.app.state.db_pool
     try:
-        await check_db(pool)
+        async with session_manager.connect() as conn:
+            await conn.execute(text("SELECT 1"))
         return {
             "status": "UP",
             "checks": {

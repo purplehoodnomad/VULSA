@@ -12,13 +12,13 @@ class DatabaseSessionManager:
         self._sessionmaker: async_sessionmaker | None = None
 
     def init(self, host: str):
-        self._engine = create_async_engine(host) # засовываем в движок нужный нам хост
-        self._sessionmaker = async_sessionmaker(autocommit=False, bind=self._engine) # фабрика сессий связанных заданным движком
+        self._engine = create_async_engine(host)
+        self._sessionmaker = async_sessionmaker(autocommit=False, bind=self._engine)
 
-    async def close(self): # завершает работу менеджера
+    async def close(self):
         if self._engine is None:
             raise Exception("DatabaseSessionManager is not initialized")
-        await self._engine.dispose() # ожидает завершения всех активный соединений и освобождает ресурсы
+        await self._engine.dispose()
         self._engine = None
         self._sessionmaker = None
 
@@ -29,10 +29,9 @@ class DatabaseSessionManager:
 
         async with self._engine.begin() as connection:
             try:
-                yield connection # выдает AsyncConnection по месту требования
-                # если бы был return, то роллбек никогда бы не выполнился
+                yield connection
             except Exception:
-                await connection.rollback() # откатывает транзакцию при любом исключении
+                await connection.rollback()
                 raise
 
     @asynccontextmanager
@@ -41,7 +40,7 @@ class DatabaseSessionManager:
             raise Exception("DatabaseSessionManager is not initialized")
 
         async with self._sessionmaker() as session:
-            yield session # аналогично, но выплевывает AsyncSession
+            yield session
 
 
     # Used for testing

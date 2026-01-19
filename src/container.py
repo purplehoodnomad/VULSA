@@ -14,15 +14,3 @@ class Container(DeclarativeContainer):
     link_uow_factory = Factory(PostgresLinkUnitOfWork)
     user_uow_factory = Factory(PostgresUserUnitOfWork)
     auth_uow_factory = Factory(PostgresAuthUnitOfWork)
-
-
-# TODO: перенести wiring сюда
-#     container.wire(
-#     modules=[
-#         "infrastructure.sqlalchemy.session",
-#         "api.v1.link.dependencies",
-#         "api.v1.user.dependencies",
-#         "api.v1.auth.dependencies",
-#         "redirect.dependencies"
-#     ]
-# ) 
