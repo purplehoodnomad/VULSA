@@ -6,6 +6,11 @@ class UserNotFound(DomainException):
     message = "User is not found"
 
 
+class UserAlreadyExists(DomainException):
+    code = "USER_ALREADY_EXISTS"
+    message = "User already exists"
+
+
 class UserEmailAlreadyExists(DomainException):
     code = "USER_EMAIL_ALREADY_EXISTS"
     message = "User with this email already exists"

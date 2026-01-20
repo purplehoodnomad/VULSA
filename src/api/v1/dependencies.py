@@ -1,9 +1,7 @@
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyHeader
-from dependency_injector.wiring import inject, Provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from container import Container
 from usecase.common.actor import Actor, ActorType
 from domain.value_objects.token import TokenVO
 
@@ -11,6 +9,7 @@ from usecase.common.event_bus import EventBus
 from domain.link.events import LinkClickEvent
 from usecase.redirect.utils.handlers import LinkVisitedHandler
 
+from infrastructure.uow.link import AbstractLinkUnitOfWork
 from infrastructure.sqlalchemy.session import get_async_session
 from infrastructure.uow.builders import get_link_uow
 from api.v1.user.dependencies import get_get_current_user_usecase
@@ -51,10 +50,9 @@ async def get_actor(
     return Actor(id=None, type=ActorType.UNAUTHORIZED)
 
 
-@inject
-async def get_event_bus(
-    event_bus: EventBus = Depends(Provide[Container.event_bus]),
-    session: AsyncSession = Depends(get_async_session)
+def subscribe_link_events(
+    event_bus: EventBus,
+    uow: AbstractLinkUnitOfWork,
 ) -> EventBus:
-    event_bus.subscribe(LinkClickEvent, LinkVisitedHandler(get_link_uow(session)))
+    event_bus.subscribe(LinkClickEvent, LinkVisitedHandler(uow))
     return event_bus

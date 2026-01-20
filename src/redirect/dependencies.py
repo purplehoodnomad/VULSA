@@ -2,27 +2,33 @@ from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.postgresql.di.injection import build_link_uow
-from infrastructure.postgresql.uow.link import AbstractLinkUnitOfWork
+from infrastructure.uow.builders import get_link_uow
+from infrastructure.postgresql.di.injection import get_event_bus
 
 from usecase.redirect.abstract import AbstractLinkRedirectUseCase
 from usecase.redirect.implementation import PostgresLinkRedirectUseCase
 from usecase.redirect.utils.dto import ClickMetadataDTO
 
-from api.v1.dependencies import get_event_bus
+from api.v1.dependencies import subscribe_link_events
 from usecase.common.event_bus import EventBus
 
-
-async def get_link_uow(session: AsyncSession = Depends(get_async_session)) -> AbstractLinkUnitOfWork:
-    return build_link_uow(session)
 
 
 async def get_link_redirect_usecase(
     session: AsyncSession = Depends(get_async_session),
-    event_bus: EventBus = Depends(get_event_bus)
+    event_bus: EventBus = Depends(get_event_bus),
 ) -> AbstractLinkRedirectUseCase:
-    uow = await get_link_uow(session)
-    return PostgresLinkRedirectUseCase(uow=uow, event_bus=event_bus)
+    uow = get_link_uow(session)
+
+    event_bus = subscribe_link_events(
+        event_bus=event_bus,
+        uow=uow,
+    )
+
+    return PostgresLinkRedirectUseCase(
+        uow=uow,
+        event_bus=event_bus,
+    )
 
 
 async def get_click_metadata(request: Request) -> ClickMetadataDTO:

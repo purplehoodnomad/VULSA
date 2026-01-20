@@ -1,26 +1,27 @@
 from copy import deepcopy
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from infrastructure.uow.user import AbstractUserUnitOfWork
 from infrastructure.inmemory.repositories.user import InMemoryUserRepository
+from infrastructure.inmemory.repositories.role import InMemoryRoleRepository
 
 from domain.user.entity import User
 from domain.value_objects.common import UserId
 
 
-from domain.role.repository import AbstractRoleRepository
-
-
-class InMenoryUserUnitOfWork(AbstractUserUnitOfWork):
-    def __init__(self, user_storage: dict[UserId, User]):
-        self._user_storage = user_storage
+class InMemoryUserUnitOfWork(AbstractUserUnitOfWork):
+    def __init__(self, session: AsyncSession | None = None, storage: dict[UserId, User] = {}):
+        self._user_storage = storage
         self._snapshot: dict[UserId, User] | None = None
 
         self._user_repo: InMemoryUserRepository | None = None
-        self._role_repo: AbstractRoleRepository | None = None
+        self._role_repo: InMemoryRoleRepository | None = None
 
     async def __aenter__(self):
         self._snapshot = deepcopy(self._user_storage)
         self._user_repo = InMemoryUserRepository(self._user_storage)
+        self._role_repo = InMemoryRoleRepository()
         return self
 
     async def __aexit__(self, exc_type: Exception | None, exc_val, traceback):
@@ -45,7 +46,6 @@ class InMenoryUserUnitOfWork(AbstractUserUnitOfWork):
         return self._user_repo
 
     @property
-    def role_repo(self) -> AbstractRoleRepository:
-        raise NotImplementedError
+    def role_repo(self) -> InMemoryRoleRepository:
         assert self._role_repo is not None
         return self._role_repo

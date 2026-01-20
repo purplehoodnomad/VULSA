@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession

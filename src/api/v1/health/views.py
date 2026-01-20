@@ -1,12 +1,11 @@
 from datetime import datetime, timezone
 from typing import Any
 
-from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from container import Container
-from infrastructure.sqlalchemy.session_manager import DatabaseSessionManager
+from infrastructure.sqlalchemy.session import get_async_connection
 
 
 router = APIRouter(prefix="/health")
@@ -21,15 +20,11 @@ async def liveness_probe() -> dict[str, Any]:
     }
 
 
-@inject
 @router.get("/ready")
-async def readiness_probe(
-    session_manager: DatabaseSessionManager = Depends(Provide[Container.session_manager])
-) -> dict[str, Any]:
+async def readiness_probe(connection: AsyncConnection = Depends(get_async_connection)) -> dict[str, Any]:
     """Checks DB connection."""
     try:
-        async with session_manager.connect() as conn:
-            await conn.execute(text("SELECT 1"))
+        await connection.execute(text("SELECT 1"))
         return {
             "status": "UP",
             "checks": {
@@ -39,6 +34,7 @@ async def readiness_probe(
             "timestamp": datetime.now(timezone.utc),
         }
     except Exception as e:
+        print(e)
         return {
             "status": "DOWN",
             "checks": {

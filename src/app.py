@@ -11,20 +11,9 @@ from domain.exceptions import DomainException
 from api.v1.exceptions import domain_exception_handler
 
 
-container = Container()
-container.wire(
-    modules=[
-        "infrastructure.sqlalchemy.session",
-        "api.v1.link.dependencies",
-        "api.v1.user.dependencies",
-        "api.v1.auth.dependencies",
-        "redirect.dependencies",
-    ]
-)
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    container = Container.get_wired_container()
     sessionmanager = container.session_manager()
     sessionmanager.init(settings.database.get_database_url())
     try:
