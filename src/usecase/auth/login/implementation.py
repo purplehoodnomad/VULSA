@@ -8,7 +8,7 @@ from domain.value_objects.user import Email
 from .abstract import AbstractLoginUseCase
 
 
-class PostgresLoginUseCase(AbstractLoginUseCase):
+class LoginUseCase(AbstractLoginUseCase):
     def __init__(self, uow: AbstractAuthUnitOfWork):
         self.uow = uow
 

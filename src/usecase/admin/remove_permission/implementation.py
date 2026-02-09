@@ -8,7 +8,7 @@ from domain.value_objects.role import Permission, RoleName
 from usecase.admin.utils.dto import RoleDTO, EditPermissionDTO
 
 
-class PostgresRemovePermissionUseCase(AbstractRemovePermissionUseCase):
+class RemovePermissionUseCase(AbstractRemovePermissionUseCase):
     def __init__(self, uow: AbstractUserUnitOfWork):
         self.uow = uow
 

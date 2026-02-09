@@ -3,7 +3,7 @@ from datetime import datetime
 
 from infrastructure.inmemory.uow.user import InMemoryUserUnitOfWork
 from usecase.user.utils.dto import UserCreateDTO
-from usecase.user.create_user.implementation import PostgresCreateUserUseCase
+from usecase.user.create_user.implementation import CreateUserUseCase
 
 
 @pytest.mark.asyncio
@@ -15,7 +15,7 @@ async def test_create_user_usecase():
     )
 
     uow = InMemoryUserUnitOfWork()
-    usecase = PostgresCreateUserUseCase(uow)
+    usecase = CreateUserUseCase(uow)
     user = await usecase.execute(user_dto)
     
     assert user.email == "test@mail.com"

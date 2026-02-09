@@ -7,7 +7,7 @@ from usecase.link.utils.dto import LinkDTO, LinkFilterDto
 from .abstract import AbstractGetLinksListUseCase
 
 
-class PostgresGetLinksListUseCase(AbstractGetLinksListUseCase):
+class GetLinksListUseCase(AbstractGetLinksListUseCase):
     def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
     

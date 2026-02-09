@@ -5,7 +5,7 @@ from infrastructure.uow.link import AbstractLinkUnitOfWork
 from .abstract import AbstractCreateLinkUseCase
 
 
-class PostgresCreateLinkUseCase(AbstractCreateLinkUseCase):
+class CreateLinkUseCase(AbstractCreateLinkUseCase):
     def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
 

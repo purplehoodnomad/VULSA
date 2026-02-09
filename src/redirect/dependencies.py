@@ -6,7 +6,7 @@ from infrastructure.uow.builders import get_link_uow
 from infrastructure.postgresql.di.injection import get_event_bus
 
 from usecase.redirect.abstract import AbstractLinkRedirectUseCase
-from usecase.redirect.implementation import PostgresLinkRedirectUseCase
+from usecase.redirect.implementation import LinkRedirectUseCase
 from usecase.redirect.utils.dto import ClickMetadataDTO
 
 from api.v1.dependencies import subscribe_link_events
@@ -25,7 +25,7 @@ async def get_link_redirect_usecase(
         uow=uow,
     )
 
-    return PostgresLinkRedirectUseCase(
+    return LinkRedirectUseCase(
         uow=uow,
         event_bus=event_bus,
     )

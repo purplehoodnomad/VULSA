@@ -6,7 +6,7 @@ from usecase.user.utils.dto import UserDTO
 from .abstract import AbstractGetCurrentUserUseCase
 
 
-class PostgresGetCurrentUserUseCase(AbstractGetCurrentUserUseCase):
+class GetCurrentUserUseCase(AbstractGetCurrentUserUseCase):
     def __init__(self, uow: AbstractAuthUnitOfWork):
         self.uow = uow
 

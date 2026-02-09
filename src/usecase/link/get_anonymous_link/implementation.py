@@ -8,7 +8,7 @@ from domain.value_objects.link import AnonymousEditKey
 
 
 
-class PostgresGetAnonymousLinkUseCase(AbstractGetAnonymousLinkUseCase):
+class GetAnonymousLinkUseCase(AbstractGetAnonymousLinkUseCase):
     def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
     

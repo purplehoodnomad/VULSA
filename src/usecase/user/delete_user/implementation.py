@@ -8,7 +8,7 @@ from usecase.user.utils.dto import UserDeleteDTO
 from .abstract import AbstractDeleteUserUseCase
 
 
-class PostgresDeleteUserUseCase(AbstractDeleteUserUseCase):
+class DeleteUserUseCase(AbstractDeleteUserUseCase):
     def __init__(self, uow: AbstractUserUnitOfWork):
         self.uow = uow
 

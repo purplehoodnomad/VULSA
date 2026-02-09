@@ -8,7 +8,7 @@ from usecase.redirect.utils.dto import ClickMetadataDTO
 from .abstract import AbstractLinkRedirectUseCase
 
 
-class PostgresLinkRedirectUseCase(AbstractLinkRedirectUseCase):
+class LinkRedirectUseCase(AbstractLinkRedirectUseCase):
     def __init__(
         self,
         uow: AbstractLinkUnitOfWork,

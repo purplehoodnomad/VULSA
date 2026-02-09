@@ -12,7 +12,7 @@ from usecase.link.utils.dto import LinkDTO, LinkUpdateDTO
 from .abstract import AbstractEditShortLinkUseCase
 
 
-class PostgresEditShortLinkUseCase(AbstractEditShortLinkUseCase):
+class EditShortLinkUseCase(AbstractEditShortLinkUseCase):
     def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
 

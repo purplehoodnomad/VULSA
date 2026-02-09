@@ -9,7 +9,7 @@ from usecase.user.utils.dto import UserDTO
 from .abstract import AbstractGetUserByIdUseCase
 
 
-class PostgresGetUserByIdUseCase(AbstractGetUserByIdUseCase):
+class GetUserByIdUseCase(AbstractGetUserByIdUseCase):
     def __init__(self, uow: AbstractUserUnitOfWork):
         self.uow = uow
 

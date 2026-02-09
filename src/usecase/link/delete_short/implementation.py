@@ -9,7 +9,7 @@ from .abstract import AbstractDeleteShortUseCase
 
 
 
-class PostgresDeleteShortUseCase(AbstractDeleteShortUseCase):
+class DeleteShortUseCase(AbstractDeleteShortUseCase):
     def __init__(self, uow: AbstractLinkUnitOfWork):
         self.uow = uow
 

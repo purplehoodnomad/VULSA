@@ -6,7 +6,7 @@ from usecase.auth.utils.dto import TokenDTO
 from .abstract import AbstractRefreshAccessTokenUseCase
 
 
-class PostgresRefreshAccessTokenUseCase(AbstractRefreshAccessTokenUseCase):
+class RefreshAccessTokenUseCase(AbstractRefreshAccessTokenUseCase):
     def __init__(self, uow: AbstractAuthUnitOfWork):
         self.uow = uow
 

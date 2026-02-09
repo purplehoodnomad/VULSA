@@ -9,7 +9,7 @@ from domain.value_objects.user import Email, HashedPassword
 from domain.value_objects.role import RoleName
 
 
-class PostgresCreateUserUseCase(AbstractCreateUserUseCase):
+class CreateUserUseCase(AbstractCreateUserUseCase):
     def __init__(self, uow: AbstractUserUnitOfWork):
         self.uow = uow
 
