@@ -1,10 +1,9 @@
 from enum import Enum
+from redis.asyncio import Redis
 from dependency_injector.containers import DeclarativeContainer
-from dependency_injector.providers import Provider, Singleton, Factory
+from dependency_injector.providers import Singleton, Factory
 
 from infrastructure.sqlalchemy.session_manager import DatabaseSessionManager
-
-from infrastructure.uow.user import AbstractUserUnitOfWork
 
 from infrastructure.postgresql.uow.link import PostgresLinkUnitOfWork
 from infrastructure.postgresql.uow.user import PostgresUserUnitOfWork
@@ -12,7 +11,10 @@ from infrastructure.postgresql.uow.auth import PostgresAuthUnitOfWork
 
 from infrastructure.inmemory.uow.user import InMemoryUserUnitOfWork
 
+from infrastructure.cache.redis.client import RedisClient
+
 from usecase.common.event_bus import EventBus
+from settings import settings
 
 
 class ContainerUoWTypes(Enum):
@@ -31,6 +33,9 @@ class Container(DeclarativeContainer):
     auth_uow_factory = Factory(PostgresAuthUnitOfWork)
     _postgres_user_uow_factory = Factory(PostgresUserUnitOfWork)
     _inmemory_user_uow_factory = Factory(InMemoryUserUnitOfWork)
+
+    redis_client = Singleton(RedisClient)
+
 
     @classmethod
     def get_user_uow_factory(cls):

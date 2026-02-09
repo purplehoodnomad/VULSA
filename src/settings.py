@@ -29,13 +29,22 @@ class _DatabaseSettings(BaseSettings):
     port: int = 5432
     name: str = 'postgres'
 
-    def get_database_url(self):
+    def get_url(self):
         return f"postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
+
+
+class _CacheSettings(BaseSettings):
+    host: str = "localhost"
+    port: int = 6379
+
+    def get_url(self):
+        return f"redis://{self.host}:{self.port}"
 
 
 class _Settings(BaseSettings):
     app: _AppSettings
     database: _DatabaseSettings
+    cache: _CacheSettings
 
     @classmethod
     def load(cls) -> "_Settings":
