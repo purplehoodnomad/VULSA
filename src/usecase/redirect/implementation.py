@@ -44,6 +44,7 @@ class LinkRedirectUseCase(AbstractLinkRedirectUseCase):
         entry = LinkCacheEntry.from_entity(link)
         await self.link_cache.save(entry)
         
+        # publising redirect event
         await self.event_bus.publish(link.pull_events())
         
         return SimpleLinkDTO.from_entity(link)
