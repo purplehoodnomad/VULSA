@@ -1,6 +1,5 @@
-from uuid import UUID
-
 from infrastructure.uow.link import AbstractLinkUnitOfWork
+from domain.link.cache import AbstractLinkCache
 from usecase.common.actor import Actor
 from domain.value_objects.common import UserId
 from domain.value_objects.link import Short, AnonymousEditKey
@@ -10,8 +9,13 @@ from .abstract import AbstractDeleteShortUseCase
 
 
 class DeleteShortUseCase(AbstractDeleteShortUseCase):
-    def __init__(self, uow: AbstractLinkUnitOfWork):
+    def __init__(
+        self,
+        uow: AbstractLinkUnitOfWork,
+        link_cache: AbstractLinkCache
+    ):
         self.uow = uow
+        self.link_cache = link_cache
 
     async def execute(
         self,
@@ -29,3 +33,4 @@ class DeleteShortUseCase(AbstractDeleteShortUseCase):
                 link = await uow.link_repo.get_by_edit_key(AnonymousEditKey(actor.id))
             
             await uow.link_repo.delete(link)
+        await self.link_cache.remove(link.short.value)

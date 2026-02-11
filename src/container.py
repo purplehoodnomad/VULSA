@@ -12,9 +12,9 @@ from infrastructure.postgresql.uow.auth import PostgresAuthUnitOfWork
 from infrastructure.inmemory.uow.user import InMemoryUserUnitOfWork
 
 from infrastructure.cache.redis.client import RedisClient
+from infrastructure.cache.redis.repositories.link_cache import RedisLinkCache
 
 from usecase.common.event_bus import EventBus
-from settings import settings
 
 
 class ContainerUoWTypes(Enum):
@@ -35,6 +35,7 @@ class Container(DeclarativeContainer):
     _inmemory_user_uow_factory = Factory(InMemoryUserUnitOfWork)
 
     redis_client = Singleton(RedisClient)
+    link_cache_factory = Factory(RedisLinkCache, client=redis_client)
 
 
     @classmethod
@@ -53,6 +54,7 @@ class Container(DeclarativeContainer):
             modules=[
                 "infrastructure.sqlalchemy.session",
                 "infrastructure.postgresql.di.injection",
+                "infrastructure.cache.redis.di.injection"
             ]
         )
         return container

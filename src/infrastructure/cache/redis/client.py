@@ -1,6 +1,7 @@
 from typing import Optional
 from redis.asyncio import Redis, from_url
 
+
 class RedisClient:
     def __init__(self):
         self._client: Optional[Redis] = None
@@ -22,3 +23,8 @@ class RedisClient:
             await self._client.close()
             await self._client.connection_pool.disconnect()
             self._client = None
+
+
+    @property
+    def client(self) -> Redis:
+        return self._ensure()

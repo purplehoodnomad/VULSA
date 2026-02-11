@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from redis.asyncio import Redis
 
 from domain.link.cache import AbstractLinkCache
@@ -12,7 +14,7 @@ LUA_GET_AND_INCREMENT = """
 -- KEYS[2] = counter key
 
 if redis.call("EXISTS", KEYS[1]) == 0 then
-	return {err = "CACHE_MISS"}
+	return "CACHE_MISS"
 end
 
 local data = redis.call("HGETALL", KEYS[1])
@@ -33,7 +35,7 @@ end
 if expires_at ~= nil then
 	local now = tonumber(redis.call("TIME")[1])
 	if now >= expires_at then
-		return {err = "SHORT_LINK_EXPIRED"}
+		return "SHORT_LINK_EXPIRED"
 	end
 end
 
@@ -41,7 +43,7 @@ end
 local times_used_current = redis.call("GET", KEYS[2])
 
 if redirect_limit ~= nil and times_used >= redirect_limit then
-	return {err = "SHORT_LINK_REDIRECT_LIMIT_REACHED"}
+	return "SHORT_LINK_REDIRECT_LIMIT_REACHED"
 end
 
 local times_used = redis.call("INCR", KEYS[2])
@@ -51,6 +53,8 @@ return {data, times_used}
 
 
 class RedisLinkCache(AbstractLinkCache):
+	DEFAULT_TTL = 24 * 60 * 60 # 1 day
+
 	def __init__(self, client: Redis):
 		self._client = client
 		self._script_get_and_increment = self._client.register_script(LUA_GET_AND_INCREMENT)
@@ -86,7 +90,8 @@ class RedisLinkCache(AbstractLinkCache):
 
 	async def get(self, short: str) -> LinkCacheEntry:
 		"""Returns raw LinkCacheEntry"""
-		vals = await self._client.hgetall(hkey)
+		hkey = self._hash_key(short)
+		vals = await self._client.hgetall(hkey) # type: ignore
 		if not vals:
 			raise CacheMiss()
 
@@ -94,6 +99,7 @@ class RedisLinkCache(AbstractLinkCache):
 		times_used_raw = await self._client.get(counter_key)
 		times_used = int(times_used_raw) if times_used_raw else 0
 
+		print(self._client.hgetall)
 		return self._parse_link_hash(
 			vals=vals,
 			times_used=times_used,
@@ -107,8 +113,8 @@ class RedisLinkCache(AbstractLinkCache):
 
 		res = await self._script_get_and_increment(keys=[hkey, counter_key])
 
-		if isinstance(res, dict) and "err" in res:
-			match res["err"]:
+		if isinstance(res, str):
+			match res:
 				case "CACHE_MISS":
 					raise CacheMiss()
 				case "SHORT_LINK_REDIRECT_LIMIT_REACHED":
@@ -125,6 +131,38 @@ class RedisLinkCache(AbstractLinkCache):
 			short=short,
 		)
 
+
+	async def save(self, entry: LinkCacheEntry, custom_ttl: int | None = None) -> None:
+		now = int(datetime.now().timestamp())
+
+		hkey = self._hash_key(entry.short)
+		counter_key = self._counter_key(entry.short)
+
+		data: dict[str, str] = {"long": entry.long}
+
+		if entry.expires_at is not None:
+			data["expires_at"] = str(entry.expires_at)
+
+		if entry.redirect_limit is not None:
+			data["redirect_limit"] = str(entry.redirect_limit)
+
+		pipe = self._client.pipeline()
+
+
+		pipe.hset(hkey, mapping=data)
+		pipe.set(counter_key, entry.times_used)
+
+		ttl = custom_ttl if custom_ttl is not None else self.DEFAULT_TTL
+		if entry.expires_at is not None:
+			delta = entry.expires_at - now
+			ttl = min(ttl, delta) if delta > 0 else 1
+		
+		pipe.expire(hkey, ttl)
+		pipe.expire(counter_key, ttl)
+
+		await pipe.execute()
+
 	
-	async def save(self, entry: LinkCacheEntry, ttl: int | None = None) -> None:
-		...
+	async def remove(self, short: str) -> None:
+		hkey = self._hash_key(short)
+		await self._client.delete(hkey)

@@ -6,7 +6,7 @@ from infrastructure.cache.entries.link import LinkCacheEntry
 
 class AbstractLinkCache(ABC):
     @abstractmethod
-    async def save(self, entry: LinkCacheEntry, ttl: Optional[int] = None) -> None:
+    async def save(self, entry: LinkCacheEntry, custom_ttl: Optional[int] = None) -> None:
         raise NotImplementedError()
     
     @abstractmethod
@@ -15,4 +15,8 @@ class AbstractLinkCache(ABC):
 
     @abstractmethod
     async def get_and_increment(self, short: str) -> LinkCacheEntry:
+        raise NotImplementedError()
+    
+    @abstractmethod
+    async def remove(self, short: str) -> None:
         raise NotImplementedError()
