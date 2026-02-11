@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
 from infrastructure.uow.builders import get_link_uow
+from infrastructure.cache.redis.di.injection import get_link_cache
 
 from usecase.link.create_link.abstract import AbstractCreateLinkUseCase
 from usecase.link.get_links_list.abstract import AbstractGetLinksListUseCase
@@ -14,6 +15,8 @@ from usecase.link.get_links_list.implementation import GetLinksListUseCase
 from usecase.link.delete_short.implementation import DeleteShortUseCase
 from usecase.link.edit_short.implementation import EditShortLinkUseCase
 
+from domain.link.cache import AbstractLinkCache
+
 
 def get_link_create_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractCreateLinkUseCase:
     uow = get_link_uow(session)
@@ -23,11 +26,18 @@ def get_get_link_list_usecase(session: AsyncSession = Depends(get_async_session)
     uow = get_link_uow(session)
     return GetLinksListUseCase(uow=uow)
 
-def get_delete_short_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractDeleteShortUseCase:
+def get_delete_short_usecase(
+    session: AsyncSession = Depends(get_async_session),
+    link_cache: AbstractLinkCache = Depends(get_link_cache)
+) -> AbstractDeleteShortUseCase:
     uow = get_link_uow(session)
-    return DeleteShortUseCase(uow=uow)
+    
+    return DeleteShortUseCase(uow, link_cache)
 
-def get_edit_short_link_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractEditShortLinkUseCase:
+def get_edit_short_link_usecase(
+    session: AsyncSession = Depends(get_async_session),
+    link_cache: AbstractLinkCache = Depends(get_link_cache)
+) -> AbstractEditShortLinkUseCase:
     uow = get_link_uow(session)
-    return EditShortLinkUseCase(uow=uow)
-
+    
+    return EditShortLinkUseCase(uow, link_cache)

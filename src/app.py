@@ -14,13 +14,19 @@ from api.v1.exceptions import domain_exception_handler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     container = Container.get_wired_container()
+    
     sessionmanager = container.session_manager()
-    sessionmanager.init(settings.database.get_database_url())
+    sessionmanager.init(settings.database.get_url())
+
+    redis = container.redis_client()
+    redis.init(settings.cache.get_url())
+    
     try:
         yield
 
     finally:
         await sessionmanager.close()
+        await redis.close()
     
 
 app = FastAPI(lifespan=lifespan)

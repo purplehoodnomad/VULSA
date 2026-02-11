@@ -12,11 +12,14 @@ from usecase.redirect.utils.dto import ClickMetadataDTO
 from api.v1.dependencies import subscribe_link_events
 from usecase.common.event_bus import EventBus
 
+from infrastructure.cache.redis.di.injection import get_link_cache
+from domain.link.cache import AbstractLinkCache
 
 
 async def get_link_redirect_usecase(
     session: AsyncSession = Depends(get_async_session),
     event_bus: EventBus = Depends(get_event_bus),
+    link_cache: AbstractLinkCache = Depends(get_link_cache)
 ) -> AbstractLinkRedirectUseCase:
     uow = get_link_uow(session)
 
@@ -28,6 +31,7 @@ async def get_link_redirect_usecase(
     return LinkRedirectUseCase(
         uow=uow,
         event_bus=event_bus,
+        link_cache=link_cache
     )
 
 

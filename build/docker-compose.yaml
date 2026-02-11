@@ -7,11 +7,19 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data # постоянные данные БД
-      - ./init:/docker-entrypoint-initdb.d # опциональные скрипты первого запуска
+      - db_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
     networks:
       - vulsa_net
-  
+
+  cache:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache_data:/data
+    command: redis-server --appendonly yes
+
   # app:
   #   build:
   #     context: ..
@@ -26,6 +34,7 @@ services:
 
 volumes:
   db_data:
+  cache_data:
 
 networks:
   vulsa_net:

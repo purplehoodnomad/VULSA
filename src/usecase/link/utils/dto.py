@@ -4,11 +4,12 @@ from datetime import datetime
 from uuid import UUID
 
 from domain.link.entity import Link
+from infrastructure.cache.entries.link import LinkCacheEntry
 from domain.value_objects.common import UserId
 from domain.value_objects.link import Short, Long, RedirectLimit, AnonymousEditKey
-from usecase.common.actor import Actor, ActorType
+from usecase.common.actor import Actor
 
-from api.v1.link.schemas import LinkSchema, LinkCreateSchema, LinkUpdateSchema, LinkListQueryParams
+from api.v1.link.schemas import LinkSchema, SimpleLinkSchema, LinkCreateSchema, LinkUpdateSchema, LinkListQueryParams
 
 
 @dataclass(slots=True)
@@ -48,6 +49,32 @@ class LinkDTO:
             redirect_limit=self.redirect_limit,
             created_at=self.created_at,
             times_used=self.times_used
+        )
+
+
+@dataclass(slots=True)
+class SimpleLinkDTO:
+    short: str
+    long: str
+    
+    @staticmethod
+    def from_cache_entry(entry: LinkCacheEntry) -> "SimpleLinkDTO":
+        return SimpleLinkDTO(
+            short=entry.short,
+            long=entry.long
+        )
+    
+    @staticmethod
+    def from_entity(entity: Link) -> "SimpleLinkDTO":
+        return SimpleLinkDTO(
+            short=entity.short.value,
+            long=entity.long.value
+        )
+    
+    def to_schema(self) -> SimpleLinkSchema:
+        return SimpleLinkSchema(
+            short=self.short,
+            long=self.long
         )
 
 

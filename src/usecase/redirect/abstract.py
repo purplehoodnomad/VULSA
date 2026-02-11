@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from usecase.link.utils.dto import LinkDTO
+from usecase.link.utils.dto import SimpleLinkDTO
 from usecase.redirect.utils.dto import ClickMetadataDTO
 
 
@@ -10,5 +10,5 @@ class AbstractLinkRedirectUseCase(ABC):
         self,
         short: str,
         metadata: ClickMetadataDTO
-    ) -> LinkDTO:
+    ) -> SimpleLinkDTO:
         raise NotImplementedError

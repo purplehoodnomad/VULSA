@@ -32,6 +32,11 @@ class LinkSchema(BaseModel):
     created_at: Optional[datetime]
 
 
+class SimpleLinkSchema(BaseModel):
+    short: str
+    long: str
+
+
 class LinkListSchema(BaseModel):
     data: list[LinkSchema]
 

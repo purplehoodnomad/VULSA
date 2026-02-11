@@ -11,3 +11,7 @@ database:
   host: "localhost"
   port: 5433
   name: "postgres"
+
+cache:
+  host: "localhost"
+  port: 6379
