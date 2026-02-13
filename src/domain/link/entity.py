@@ -114,7 +114,7 @@ class Link:
         return events
     
 
-    def consume_redirect(self, metadata: ClickMetadata) -> None:
+    def consume_redirect(self, metadata: Optional[ClickMetadata] = None, redirect_delta: int = 1) -> None:
         if self.expires_at is not None and self.expires_at < datetime.now(timezone.utc):
             raise ShortLinkExpired()
         if self.redirect_limit.value is not None and self.redirect_limit.value <= self.times_used:
@@ -122,18 +122,18 @@ class Link:
         if not self.is_active:
             raise ShortLinkInactive()
         
-        self._times_used += 1
-        self._events.append(
-            LinkClickEvent(
-                link_id=self.link_id,
-                short=self.short,
-                timestamp=datetime.now(timezone.utc),
-                ip=metadata.ip,
-                user_agent=metadata.user_agent,
-                referer=metadata.referer,
-                request_url=metadata.request_url
-            )
-        )
+        self._times_used += redirect_delta
+        # self._events.append( # TODO: fix events
+        #     LinkClickEvent(
+        #         link_id=self.link_id,
+        #         short=self.short,
+        #         timestamp=datetime.now(timezone.utc),
+        #         ip=metadata.ip,
+        #         user_agent=metadata.user_agent,
+        #         referer=metadata.referer,
+        #         request_url=metadata.request_url
+        #     )
+        # )
 
     
     def change_long(self, long: Long) -> None:

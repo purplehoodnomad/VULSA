@@ -20,3 +20,7 @@ class AbstractLinkCache(ABC):
     @abstractmethod
     async def remove(self, short: str) -> None:
         raise NotImplementedError()
+    
+    @abstractmethod
+    async def gather_click_deltas(self) -> dict[str, int]:
+        raise NotImplementedError()

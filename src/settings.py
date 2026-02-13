@@ -37,8 +37,8 @@ class _CacheSettings(BaseSettings):
     host: str = "localhost"
     port: int = 6379
 
-    def get_url(self):
-        return f"redis://{self.host}:{self.port}"
+    def get_url(self, db_num: int = 0):
+        return f"redis://{self.host}:{self.port}/{db_num}"
 
 
 class _Settings(BaseSettings):

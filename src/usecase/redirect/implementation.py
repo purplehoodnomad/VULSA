@@ -45,6 +45,7 @@ class LinkRedirectUseCase(AbstractLinkRedirectUseCase):
         await self.link_cache.save(entry)
         
         # publising redirect event
-        await self.event_bus.publish(link.pull_events())
+        """TODO: не работает из-за ебучего кеша -> в воркер"""
+        # await self.event_bus.publish(link.pull_events())
         
         return SimpleLinkDTO.from_entity(link)

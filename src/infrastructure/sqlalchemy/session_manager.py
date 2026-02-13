@@ -16,16 +16,15 @@ class DatabaseSessionManager:
         self._sessionmaker = async_sessionmaker(autocommit=False, bind=self._engine)
 
     async def close(self):
-        if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
-        await self._engine.dispose()
-        self._engine = None
-        self._sessionmaker = None
+        if self._engine is not None:
+            await self._engine.dispose()
+            self._engine = None
+            self._sessionmaker = None
 
     @asynccontextmanager
     async def connect(self) -> AsyncIterator[AsyncConnection]:
         if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise RuntimeError("DatabaseSessionManager is not initialized")
 
         async with self._engine.begin() as connection:
             try:

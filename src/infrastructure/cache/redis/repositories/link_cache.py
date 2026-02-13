@@ -12,6 +12,7 @@ from domain.link.exceptions import ShortLinkRedirectLimitReached, ShortLinkExpir
 LUA_GET_AND_INCREMENT = """
 -- KEYS[1] = hash key
 -- KEYS[2] = counter key
+-- KEYS[3] = delta key
 
 if redis.call("EXISTS", KEYS[1]) == 0 then
 	return "CACHE_MISS"
@@ -40,17 +41,62 @@ if expires_at ~= nil then
 end
 
 -- validating redirect limit
-local times_used_current = redis.call("GET", KEYS[2])
+local times_used_current = tonumber(redis.call("GET", KEYS[2])) or 0
 
-if redirect_limit ~= nil and times_used >= redirect_limit then
+if redirect_limit ~= nil and times_used_current >= redirect_limit then
 	return "SHORT_LINK_REDIRECT_LIMIT_REACHED"
 end
 
-local times_used = redis.call("INCR", KEYS[2])
+local times_used = redis.call("INCR", KEYS[2]) -- click count
+redis.call("INCR", KEYS[3]) -- delta
+
+-- restore TTL if lost
+local ttl = redis.call("TTL", KEYS[3])
+if ttl < 0 then
+    local hash_ttl = redis.call("TTL", KEYS[1])
+    if hash_ttl > 0 then
+        redis.call("EXPIRE", KEYS[3], hash_ttl)
+    end
+end
 
 return {data, times_used}
 """
 
+LUA_GATHER_DELTAS = """
+local cursor = "0"
+local result = {}
+
+repeat
+    local scan_result = redis.call(
+        "SCAN",
+        cursor,
+        "MATCH",
+        "link:*:delta",
+        "COUNT",
+        10000
+    )
+
+    cursor = scan_result[1]
+    local keys = scan_result[2]
+
+    for _, delta_key in ipairs(keys) do
+        local delta = tonumber(redis.call("GET", delta_key))
+
+        if delta ~= nil and delta > 0 then
+            local short = string.match(delta_key, "^link:(.+):delta$")
+
+            if short then
+                table.insert(result, short)
+                table.insert(result, delta)
+                redis.call("SET", delta_key, 0)
+            end
+        end
+    end
+
+until cursor == "0"
+
+return result
+"""
 
 class RedisLinkCache(AbstractLinkCache):
 	DEFAULT_TTL = 24 * 60 * 60 # 1 day
@@ -58,12 +104,16 @@ class RedisLinkCache(AbstractLinkCache):
 	def __init__(self, client: Redis):
 		self._client = client
 		self._script_get_and_increment = self._client.register_script(LUA_GET_AND_INCREMENT)
+		self._script_gather_deltas = self._client.register_script(LUA_GATHER_DELTAS)
 
 	def _hash_key(self, short: str) -> str:
 		return f"link:{short}"
 
 	def _counter_key(self, short: str) -> str:
 		return f"link:{short}:counter"
+	
+	def _delta_key(self, short: str) -> str:
+		return f"link:{short}:delta"
 
 	def _parse_link_hash(
 		self,
@@ -108,10 +158,11 @@ class RedisLinkCache(AbstractLinkCache):
 
 
 	async def get_and_increment(self, short: str) -> LinkCacheEntry:
-		hkey = self._hash_key(short)
+		hash_key = self._hash_key(short)
 		counter_key = self._counter_key(short)
+		delta_key = self._delta_key(short)
 
-		res = await self._script_get_and_increment(keys=[hkey, counter_key])
+		res = await self._script_get_and_increment(keys=[hash_key, counter_key, delta_key]) # type: ignore
 
 		if isinstance(res, str):
 			match res:
@@ -135,8 +186,9 @@ class RedisLinkCache(AbstractLinkCache):
 	async def save(self, entry: LinkCacheEntry, custom_ttl: int | None = None) -> None:
 		now = int(datetime.now().timestamp())
 
-		hkey = self._hash_key(entry.short)
+		hash_key = self._hash_key(entry.short)
 		counter_key = self._counter_key(entry.short)
+		delta_key = self._delta_key(entry.short)
 
 		data: dict[str, str] = {"long": entry.long}
 
@@ -149,20 +201,33 @@ class RedisLinkCache(AbstractLinkCache):
 		pipe = self._client.pipeline()
 
 
-		pipe.hset(hkey, mapping=data)
+		pipe.hset(hash_key, mapping=data)
 		pipe.set(counter_key, entry.times_used)
+		pipe.set(delta_key, 0)
 
 		ttl = custom_ttl if custom_ttl is not None else self.DEFAULT_TTL
 		if entry.expires_at is not None:
 			delta = entry.expires_at - now
 			ttl = min(ttl, delta) if delta > 0 else 1
 		
-		pipe.expire(hkey, ttl)
+		pipe.expire(hash_key, ttl)
 		pipe.expire(counter_key, ttl)
+		pipe.expire(delta_key, ttl)
 
 		await pipe.execute()
 
 	
 	async def remove(self, short: str) -> None:
-		hkey = self._hash_key(short)
-		await self._client.delete(hkey)
+		hash_key = self._hash_key(short)
+		counter_key = self._counter_key(short)
+		delta_key = self._delta_key(short)
+
+		await self._client.delete(hash_key, counter_key, delta_key)
+	
+
+	async def gather_click_deltas(self) -> dict[str, int]:
+		raw = await self._script_gather_deltas()
+		if not raw:
+			return {}
+		
+		return {short: int(delta) for short, delta in zip(raw[::2], raw[1::2])}
