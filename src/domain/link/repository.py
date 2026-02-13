@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 from domain.repositories.abstract import AbstractRepository
@@ -26,8 +26,8 @@ class AbstractLinkRepository(AbstractRepository[Link], ABC):
     @abstractmethod
     async def list(self,
         *,
-        offset: int,
-        limit: int,
+        offset: int = 0,
+        limit: Optional[int] = None,
         user_id: Optional[UserId] = None,
         edit_key: Optional[AnonymousEditKey] = None,
         older_than: Optional[datetime] = None,
@@ -35,5 +35,16 @@ class AbstractLinkRepository(AbstractRepository[Link], ABC):
         active_status: Optional[bool] = None,
         has_expiration_date: Optional[bool] = None,
         has_redirect_limit: Optional[bool] = None,
-    ) -> list[Link]:
+    ) -> List[Link]:
+        raise NotImplementedError
+    
+    @abstractmethod
+    async def find_for_cleanup(self,
+        *,
+        last_used_before: datetime,
+        include_expired: bool,
+        include_limit_reached: bool,
+        include_inactive: bool,
+        limit: Optional[int] = None,
+    ) -> List[Link]:
         raise NotImplementedError

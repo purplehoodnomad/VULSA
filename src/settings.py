@@ -18,7 +18,7 @@ class _AppSettings(BaseSettings):
     secret_key: SecretStr
     debug: bool = True
 
-    def get_app_url(self):
+    def get_app_url(self) -> str:
         return f"http://{self.host}:{self.port}"
 
 
@@ -29,7 +29,7 @@ class _DatabaseSettings(BaseSettings):
     port: int = 5432
     name: str = 'postgres'
 
-    def get_url(self):
+    def get_url(self) -> str:
         return f"postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
 
 
@@ -37,7 +37,7 @@ class _CacheSettings(BaseSettings):
     host: str = "localhost"
     port: int = 6379
 
-    def get_url(self, db_num: int = 0):
+    def get_url(self, db_num: int = 0) -> str:
         return f"redis://{self.host}:{self.port}/{db_num}"
 
 

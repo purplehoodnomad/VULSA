@@ -24,6 +24,7 @@ class Link:
         is_active: bool,
         redirect_limit: RedirectLimit = RedirectLimit(None),
         expires_at: Optional[datetime] = None,
+        last_used: Optional[datetime] = None
     ):
         self._link_id = link_id
         self._owner_id = owner_id
@@ -34,6 +35,7 @@ class Link:
         self._created_at = created_at
         self._times_used = times_used
         self._is_active = is_active
+        self._last_used = last_used
 
         self._events: list[LinkClickEvent] = []
 
@@ -77,6 +79,10 @@ class Link:
     @property
     def is_active(self) -> bool:
         return self._is_active
+    
+    @property
+    def last_used(self) -> datetime | None:
+        return self._last_used
 
     @property
     def events(self) -> list:
@@ -104,7 +110,8 @@ class Link:
             expires_at=expires_at,
             created_at=datetime.now(timezone.utc),
             times_used=0,
-            is_active=True
+            is_active=True,
+            last_used=None
     )
 
 
@@ -115,14 +122,16 @@ class Link:
     
 
     def consume_redirect(self, metadata: Optional[ClickMetadata] = None, redirect_delta: int = 1) -> None:
-        if self.expires_at is not None and self.expires_at < datetime.now(timezone.utc):
+        now = datetime.now(timezone.utc)
+        if self.expires_at is not None and self.expires_at < now:
             raise ShortLinkExpired()
-        if self.redirect_limit.value is not None and self.redirect_limit.value <= self.times_used:
+        if self.redirect_limit.value is not None and self.times_used + redirect_delta > self.redirect_limit.value:
             raise ShortLinkRedirectLimitReached()
         if not self.is_active:
             raise ShortLinkInactive()
         
         self._times_used += redirect_delta
+        self._last_used = now
         # self._events.append( # TODO: fix events
         #     LinkClickEvent(
         #         link_id=self.link_id,

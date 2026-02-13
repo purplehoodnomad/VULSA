@@ -13,7 +13,7 @@ app = Celery(
 
 app.autodiscover_tasks([
     "workers.sync_cache",
-    # "workers.cleanup_links",
+    "workers.cleanup_links"
 ])
 
 
@@ -22,8 +22,8 @@ app.conf.beat_schedule = {
         "task": "sync_links_cache",
         "schedule": timedelta(seconds=10)
     },
-    # "cleanup-links-daily": {
-    #     "task": "delete_expired_links",
-    #     "schedule": 24 * 3600
-    # },
+    "cleanup-links-daily": {
+        "task": "delete_expired_links",
+        "schedule": timedelta(seconds=5)
+    },
 }

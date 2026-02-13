@@ -25,7 +25,7 @@ class LinkRedirectUseCase(AbstractLinkRedirectUseCase):
     async def execute(
         self,
         short: str,
-        metadata: ClickMetadataDTO
+        # metadata: ClickMetadataDTO
     ) -> SimpleLinkDTO:
         # trying to get from cache
         try:
@@ -37,7 +37,7 @@ class LinkRedirectUseCase(AbstractLinkRedirectUseCase):
         # if not in cache -> db
         async with self.uow as uow:
             link = await uow.link_repo.get_by_short(Short(short))
-            link.consume_redirect(metadata.to_vo_container())
+            link.consume_redirect() #metadata.to_vo_container()
             await uow.link_repo.update(link)
 
         # adding to cache new entry

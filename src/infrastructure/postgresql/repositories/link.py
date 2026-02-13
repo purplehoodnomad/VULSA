@@ -1,7 +1,7 @@
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timezone
+from typing import Optional, List
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, and_, not_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -81,8 +81,8 @@ class PostgresLinkRepository(AbstractLinkRepository):
 
     async def list(self,
         *,
-        offset: int,
-        limit: int,
+        offset: int = 0,
+        limit: Optional[int] = None,
         user_id: Optional[UserId] = None,
         edit_key: Optional[AnonymousEditKey] = None,
         older_than: Optional[datetime] = None,
@@ -90,7 +90,7 @@ class PostgresLinkRepository(AbstractLinkRepository):
         active_status: Optional[bool] = None,
         has_expiration_date: Optional[bool] = None,
         has_redirect_limit: Optional[bool] = None,
-    ) -> list[Link]:
+    ) -> List[Link]:
         expression = []
 
         if user_id is not None:
@@ -114,11 +114,70 @@ class PostgresLinkRepository(AbstractLinkRepository):
             else:
                 expression.append(LinkORM.redirect_limit.is_(None))
 
-        query = select(LinkORM).where(*expression).offset(offset).limit(limit)
+        query = select(LinkORM).where(*expression).offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
 
         result = await self._session.execute(query)
         scalars = result.scalars().all()
 
+        if not scalars:
+            return []
+
+        return [scalar.to_entity() for scalar in scalars]
+
+
+    async def find_for_cleanup(self,
+        *,
+        last_used_before: datetime,
+        include_expired: bool,
+        include_limit_reached: bool,
+        include_inactive: bool,
+        limit: Optional[int] = None,
+    ) -> List[Link]:
+        conditions = []
+        now = datetime.now(timezone.utc)
+
+        date_condition = or_(
+            LinkORM.last_used <= last_used_before,
+            LinkORM.last_used.is_(None),
+        )
+
+        if include_expired:
+            conditions.append(
+                and_(
+                    LinkORM.expires_at.isnot(None),
+                    LinkORM.expires_at < now,
+                )
+            )
+
+        if include_limit_reached:
+            conditions.append(
+                and_(
+                    LinkORM.redirect_limit.isnot(None),
+                    LinkORM.times_used >= LinkORM.redirect_limit,
+                )
+            )
+
+        if include_inactive:
+            conditions.append(
+                LinkORM.is_active.is_(False)
+            )
+        
+        if not conditions:
+            return []
+        
+        query = select(LinkORM).where(
+            and_(
+                date_condition,
+                or_(*conditions),
+            )
+        )
+        if limit is not None:
+            query = query.limit(limit)
+
+        result = await self._session.execute(query)
+        scalars = result.scalars().all()
         if not scalars:
             return []
 

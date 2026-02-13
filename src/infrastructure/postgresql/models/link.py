@@ -82,6 +82,9 @@ class LinkORM(Base):
         nullable=False,
     )
 
+    last_used: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+
     @staticmethod
     def from_entity(entity: Link) -> "LinkORM":
         return LinkORM(
@@ -94,7 +97,8 @@ class LinkORM(Base):
             expires_at=entity.expires_at,
             created_at=entity.created_at,
             times_used=entity.times_used,
-            is_active=entity.is_active
+            is_active=entity.is_active,
+            last_used=entity.last_used
         )
     
     def to_entity(self) -> Link:
@@ -107,7 +111,8 @@ class LinkORM(Base):
             expires_at=self.expires_at,
             created_at=self.created_at,
             times_used=self.times_used,
-            is_active=self.is_active
+            is_active=self.is_active,
+            last_used=self.last_used
         )
     
     def update_from_entity(self, entity: Link):
@@ -119,3 +124,4 @@ class LinkORM(Base):
         self.redirect_limit = entity.redirect_limit.value if entity.redirect_limit is not None else None
         self.expires_at = entity.expires_at
         self.times_used = entity.times_used
+        self.last_used = entity.last_used

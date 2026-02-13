@@ -12,9 +12,9 @@ router = APIRouter()
 
 @router.get("/{short}")
 async def process_redirect(
-    short: str,
-    metadata: ClickMetadataDTO = Depends(get_click_metadata),
-    usecase: AbstractLinkRedirectUseCase = Depends(get_link_redirect_usecase),
- ) -> RedirectResponse:
-    link = await usecase.execute(short, metadata)
-    return RedirectResponse(url=link.long, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+   short: str,
+   metadata: ClickMetadataDTO = Depends(get_click_metadata),
+   usecase: AbstractLinkRedirectUseCase = Depends(get_link_redirect_usecase),
+) -> RedirectResponse:
+   link = await usecase.execute(short)
+   return RedirectResponse(url=link.long, status_code=status.HTTP_307_TEMPORARY_REDIRECT)

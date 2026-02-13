@@ -172,6 +172,8 @@ class RedisLinkCache(AbstractLinkCache):
 					raise ShortLinkRedirectLimitReached()
 				case "SHORT_LINK_EXPIRED":
 					raise ShortLinkExpired()
+				case _:
+					raise Exception(res)
 
 		raw_vals, times_used = res
 		vals = dict(zip(raw_vals[::2], raw_vals[1::2]))
