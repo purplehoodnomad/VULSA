@@ -7,7 +7,6 @@ __pycache__/
 env/
 .venv/
 .pytest_cache/
-src/celerybeat-schedule
 # If you use a specific name for your virtual environment, add it here, e.g.
 # .venv/
 # For pipenv, you might ignore virtualenv folder
@@ -17,6 +16,11 @@ src/celerybeat-schedule
 # Environment files
 .env
 .flaskenv
+
+# Celery beat schedule files
+**/celerybeat-schedule
+**/celerybeat-schedule.db
+**/celerybeat.pid
 
 # Docker
 # Ignore locally built images/containers specific files if needed
