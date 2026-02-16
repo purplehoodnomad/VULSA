@@ -20,6 +20,56 @@ services:
       - cache_data:/data
     command: redis-server --appendonly yes
 
+  zookeeper:
+      image: confluentinc/cp-zookeeper:7.5.0
+      container_name: vulsa_zookeeper
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 2000
+      ports:
+        - "2181:2181"
+      volumes:
+        - zookeeper_data:/var/lib/zookeeper/data
+        - zookeeper_log:/var/lib/zookeeper/log
+      networks:
+        - vulsa_net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: vulsa_kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - vulsa_net
+
+volumes:
+  db_data:
+  cache_data:
+  zookeeper_data:
+  zookeeper_log:
+  kafka_data:
+
+networks:
+  vulsa_net:
+    driver: bridge
+
+
+
+
+
   # app:
   #   build:
   #     context: ..
@@ -31,11 +81,3 @@ services:
   #     - "8000:8000"
   #   networks:
   #     - vulsa_net
-
-volumes:
-  db_data:
-  cache_data:
-
-networks:
-  vulsa_net:
-    driver: bridge

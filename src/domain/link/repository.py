@@ -4,7 +4,7 @@ from datetime import datetime
 
 from domain.repositories.abstract import AbstractRepository
 
-from domain.value_objects.link import Short, AnonymousEditKey
+from domain.value_objects.link import Short, AnonymousEditKey, ClickStamp
 from domain.value_objects.common import UserId
 
 from .entity import Link
@@ -47,4 +47,14 @@ class AbstractLinkRepository(AbstractRepository[Link], ABC):
         include_inactive: bool,
         limit: Optional[int] = None,
     ) -> List[Link]:
+        raise NotImplementedError
+    
+    @abstractmethod
+    async def get_batch(self, shorts: set[Short]) -> List[Link]:
+        raise NotImplementedError
+
+
+class AbstractClickStampRepository(AbstractRepository[ClickStamp], ABC):
+    @abstractmethod
+    async def create_batch(self, entities: set[ClickStamp]) -> None:
         raise NotImplementedError

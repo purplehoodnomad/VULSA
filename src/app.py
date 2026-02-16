@@ -20,6 +20,10 @@ async def lifespan(app: FastAPI):
 
     redis = container.redis_client()
     redis.init(settings.cache.get_url())
+
+    kafka = container.kafka_client()
+    kafka.init(settings.kafka.bootstrap_servers)
+    producer = await kafka.get_producer()
     
     try:
         yield
@@ -27,6 +31,7 @@ async def lifespan(app: FastAPI):
     finally:
         await sessionmanager.close()
         await redis.close()
+        await kafka.close()
     
 
 app = FastAPI(lifespan=lifespan)

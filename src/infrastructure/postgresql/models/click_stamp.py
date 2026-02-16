@@ -3,15 +3,13 @@ from uuid import UUID
 from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey
+from sqlalchemy import String, DateTime, ForeignKey
 from sqlalchemy import UUID as UUIDAlchemy
 
 from infrastructure.sqlalchemy.base import Base
 
-from domain.click_stamp.entity import ClickStamp
 from domain.value_objects.common import LinkId
-from domain.value_objects.click import IP, UserAgent, URL, ClickStampId
-from domain.value_objects.link import Short
+from domain.value_objects.link import Short, ClickStamp, ClickStampId
 
 
 class ClickStampORM(Base):
@@ -45,20 +43,20 @@ class ClickStampORM(Base):
             link_id=entity.link_id.value,
             short=entity.short.value,
             timestamp=entity.timestamp,
-            ip=entity.ip.value,
-            user_agent=entity.user_agent.value,
-            referer=entity.referer.value,
-            request_url=entity.request_url.value
+            ip=entity.ip,
+            user_agent=entity.user_agent,
+            referer=entity.referer,
+            request_url=entity.request_url
         )
-    
+
     def to_entity(self):
         return ClickStamp(
             id=ClickStampId(self.id),
             link_id=LinkId(self.link_id),
             short=Short(self.short),
             timestamp=self.timestamp,
-            ip=IP(self.ip),
-            user_agent=UserAgent(self.user_agent),
-            referer=URL(self.referer),
-            request_url=URL(self.request_url)
+            ip=self.ip,
+            user_agent=self.user_agent,
+            referer=self.referer,
+            request_url=self.request_url
         )

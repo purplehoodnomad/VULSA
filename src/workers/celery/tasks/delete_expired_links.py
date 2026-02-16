@@ -1,7 +1,7 @@
 import asyncio
 from datetime import timedelta
 
-from workers.app import app
+from workers.celery.app import app
 from workers.dependencies import WorkerContext, get_delete_expired_links_usecase
 
 

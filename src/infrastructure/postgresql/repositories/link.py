@@ -182,3 +182,15 @@ class PostgresLinkRepository(AbstractLinkRepository):
             return []
 
         return [scalar.to_entity() for scalar in scalars]
+
+
+    async def get_batch(self, shorts: set[Short]) -> List[Link]:
+        if not shorts:
+            return []
+        
+        short_values = [s.value for s in shorts]
+        query = select(LinkORM).where(LinkORM.short.in_(short_values))
+        result = await self._session.execute(query)
+        scalars = result.scalars().all()
+        
+        return [link_orm.to_entity() for link_orm in scalars]

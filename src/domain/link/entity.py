@@ -1,13 +1,11 @@
 from typing import Optional
 from datetime import datetime, timezone
 
-from domain.link.events import LinkClickEvent
 from domain.exceptions import InvalidValue
 from domain.link.exceptions import ShortLinkInactive, ShortLinkExpired, ShortLinkRedirectLimitReached
 
 from domain.value_objects.common import LinkId, UserId
 from domain.value_objects.link import Long, Short, RedirectLimit, AnonymousEditKey
-from domain.value_objects.click import ClickMetadata
 
 
 class Link:
@@ -36,8 +34,6 @@ class Link:
         self._times_used = times_used
         self._is_active = is_active
         self._last_used = last_used
-
-        self._events: list[LinkClickEvent] = []
 
     def __eq__(self, obj: object) -> bool:
         if isinstance(obj, Link):
@@ -84,9 +80,6 @@ class Link:
     def last_used(self) -> datetime | None:
         return self._last_used
 
-    @property
-    def events(self) -> list:
-        return self._events
     
     @staticmethod
     def create(*,
@@ -113,15 +106,9 @@ class Link:
             is_active=True,
             last_used=None
     )
-
-
-    def pull_events(self) -> list[LinkClickEvent]:
-        events = self._events.copy()
-        self._events.clear()
-        return events
     
 
-    def consume_redirect(self, metadata: Optional[ClickMetadata] = None, redirect_delta: int = 1) -> None:
+    def consume_redirect(self, redirect_delta: int = 1) -> None:
         now = datetime.now(timezone.utc)
         if self.expires_at is not None and self.expires_at < now:
             raise ShortLinkExpired()
@@ -132,18 +119,6 @@ class Link:
         
         self._times_used += redirect_delta
         self._last_used = now
-        # self._events.append( # TODO: fix events
-        #     LinkClickEvent(
-        #         link_id=self.link_id,
-        #         short=self.short,
-        #         timestamp=datetime.now(timezone.utc),
-        #         ip=metadata.ip,
-        #         user_agent=metadata.user_agent,
-        #         referer=metadata.referer,
-        #         request_url=metadata.request_url
-        #     )
-        # )
-
     
     def change_long(self, long: Long) -> None:
         self._long = long

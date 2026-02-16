@@ -1,6 +1,6 @@
 import asyncio
 
-from workers.app import app
+from workers.celery.app import app
 from workers.dependencies import WorkerContext, get_sync_cache_usecase
 
 

@@ -1,8 +1,7 @@
 from infrastructure.uow.abstract import AbstractUnitOfWork
 
-from domain.link.repository import AbstractLinkRepository
+from domain.link.repository import AbstractLinkRepository, AbstractClickStampRepository
 from domain.user.repository import AbstractUserRepository
-from domain.click_stamp.repository import AbstractClickStampRepository
 
 
 class AbstractLinkUnitOfWork(AbstractUnitOfWork):

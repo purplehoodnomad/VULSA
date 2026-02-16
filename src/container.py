@@ -1,5 +1,4 @@
 from enum import Enum
-from redis.asyncio import Redis
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Singleton, Factory
 
@@ -13,6 +12,8 @@ from infrastructure.inmemory.uow.user import InMemoryUserUnitOfWork
 
 from infrastructure.cache.redis.client import RedisClient
 from infrastructure.cache.redis.repositories.link_cache import RedisLinkCache
+
+from infrastructure.broker.kafka.client import KafkaClient
 
 from usecase.common.event_bus import EventBus
 
@@ -37,6 +38,8 @@ class Container(DeclarativeContainer):
     redis_client = Singleton(RedisClient)
     link_cache_factory = Factory(RedisLinkCache, client=redis_client)
 
+    kafka_client = Singleton(KafkaClient)
+
 
     @classmethod
     def get_user_uow_factory(cls):
@@ -53,8 +56,8 @@ class Container(DeclarativeContainer):
         container.wire(
             modules=[
                 "infrastructure.sqlalchemy.session",
-                "infrastructure.postgresql.di.injection",
-                "infrastructure.cache.redis.di.injection"
+                "infrastructure.cache.redis.di.injection",
+                "infrastructure.broker.kafka.di.injection"
             ]
         )
         return container

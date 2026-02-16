@@ -41,10 +41,16 @@ class _CacheSettings(BaseSettings):
         return f"redis://{self.host}:{self.port}/{db_num}"
 
 
+class _KafkaSettings(BaseSettings):
+    bootstrap_servers: str = "kafka:9092"
+    group_id: str = "resolve-clicks"
+
+
 class _Settings(BaseSettings):
     app: _AppSettings
     database: _DatabaseSettings
     cache: _CacheSettings
+    kafka: _KafkaSettings
 
     @classmethod
     def load(cls) -> "_Settings":

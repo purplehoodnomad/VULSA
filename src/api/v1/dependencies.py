@@ -5,11 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from usecase.common.actor import Actor, ActorType
 from domain.value_objects.token import TokenVO
 
-from usecase.common.event_bus import EventBus
-from domain.link.events import LinkClickEvent
-from usecase.redirect.utils.handlers import LinkVisitedHandler
-
-from infrastructure.uow.link import AbstractLinkUnitOfWork
 from infrastructure.sqlalchemy.session import get_async_session
 from infrastructure.uow.builders import get_link_uow
 from api.v1.user.dependencies import get_get_current_user_usecase
@@ -48,11 +43,3 @@ async def get_actor(
         return Actor(id=dto.owner_id, type=ActorType.ANONYMOUS)
 
     return Actor(id=None, type=ActorType.UNAUTHORIZED)
-
-
-def subscribe_link_events(
-    event_bus: EventBus,
-    uow: AbstractLinkUnitOfWork,
-) -> EventBus:
-    event_bus.subscribe(LinkClickEvent, LinkVisitedHandler(uow))
-    return event_bus
