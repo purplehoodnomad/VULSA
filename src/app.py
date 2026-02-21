@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     redis.init(settings.cache.get_url())
 
     kafka = container.kafka_client()
-    kafka.init(settings.kafka.bootstrap_servers)
+    kafka.init(settings.kafka.get_url())
     producer = await kafka.get_producer()
     
     try:

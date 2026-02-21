@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:16-bullseye
-    container_name: vulsa_postgres
     env_file:
       - ../config/.env
     ports:
@@ -11,55 +10,104 @@ services:
       - ./init:/docker-entrypoint-initdb.d
     networks:
       - vulsa_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-  cache:
+  redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
-      - cache_data:/data
+      - redis_data:/data
     command: redis-server --appendonly yes
-
-  zookeeper:
-      image: confluentinc/cp-zookeeper:7.5.0
-      container_name: vulsa_zookeeper
-      environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
-        ZOOKEEPER_TICK_TIME: 2000
-      ports:
-        - "2181:2181"
-      volumes:
-        - zookeeper_data:/var/lib/zookeeper/data
-        - zookeeper_log:/var/lib/zookeeper/log
-      networks:
-        - vulsa_net
+    networks:
+      - vulsa_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: vulsa_kafka
-    depends_on:
-      - zookeeper
     ports:
-      - "9092:9092"
+      - "29092:29092"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - kafka_data:/var/lib/kafka/data
+      - ./bash/kafka-entrypoint.sh:/kafka-entrypoint.sh
     networks:
       - vulsa_net
+    healthcheck:
+      test: ["CMD", "bash", "-c", "kafka-broker-api-versions --bootstrap-server localhost:29092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    entrypoint: ["/bin/bash", "/kafka-entrypoint.sh"]
+  
+  kafka-clicks-resolver:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile
+    image: vulsa
+    depends_on:
+      kafka:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - vulsa_net
+    environment:
+      PYTHONPATH: src
+      CONFIG_ENV: docker
+    restart: on-failure
+    command: "python -m workers.kafka.resolve_clicks"
+
+  celery:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile
+    image: vulsa
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - vulsa_net
+    environment:
+      PYTHONPATH: src
+      CONFIG_ENV: docker
+    restart: on-failure
+    command: "celery -A workers.celery.app.app worker --beat"
 
 volumes:
   db_data:
-  cache_data:
-  zookeeper_data:
-  zookeeper_log:
+  redis_data:
   kafka_data:
 
 networks:

@@ -27,7 +27,7 @@ async def main():
     container = Container.get_wired_container()
 
     kafka = container.kafka_client()
-    kafka.init(settings.kafka.bootstrap_servers)
+    kafka.init(settings.kafka.get_url())
 
     consumer = await kafka.get_consumer(
         Topic.LINK_CLICKED,

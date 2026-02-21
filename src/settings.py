@@ -1,4 +1,5 @@
 import yaml
+import os
 
 from pathlib import Path
 
@@ -26,7 +27,7 @@ class _DatabaseSettings(BaseSettings):
     user: str
     password: SecretStr
     host: str = 'localhost'
-    port: int = 5432
+    port: int = 5433
     name: str = 'postgres'
 
     def get_url(self) -> str:
@@ -42,8 +43,11 @@ class _CacheSettings(BaseSettings):
 
 
 class _KafkaSettings(BaseSettings):
-    bootstrap_servers: str = "kafka:9092"
-    group_id: str = "resolve-clicks"
+    host: str = "localhost"
+    port: int = 9092
+
+    def get_url(self) -> str:
+        return f"{self.host}:{self.port}"
 
 
 class _Settings(BaseSettings):
@@ -54,7 +58,8 @@ class _Settings(BaseSettings):
 
     @classmethod
     def load(cls) -> "_Settings":
-        path = Path(BASE_DIR.parent, "config", "config.yaml")
+        env = os.getenv("CONFIG_ENV", "local")
+        path = BASE_DIR.parent / "config" / f"config.{env}.yaml"
 
         if path.exists():
             with open(path) as file:

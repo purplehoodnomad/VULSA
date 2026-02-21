@@ -21,6 +21,7 @@ class ResolveClicksUseCase(AbstractResolveClicksUseCase):
 
     async def execute(self) -> None:
         while True:
+            print("working")
             events: list[ClickMetadataDTO] = []
             clicks: set[ClickStamp] = set()
             
