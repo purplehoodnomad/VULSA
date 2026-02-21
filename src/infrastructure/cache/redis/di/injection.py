@@ -8,5 +8,10 @@ from infrastructure.cache.redis.client import RedisClient
 
 
 @inject
+def get_redis_client(client: RedisClient = Depends(Provide[Container.redis_client])) -> RedisClient:
+    return client
+    
+    
+@inject
 def get_link_cache(client: RedisClient = Depends(Provide[Container.redis_client])) -> AbstractLinkCache:
     return Container.link_cache_factory(client=client.client)

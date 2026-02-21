@@ -1,8 +1,29 @@
 services:
+  app:
+    build:
+      context: ..
+      dockerfile: build/Dockerfile
+    image: vulsa
+    ports:
+      - "9100:9100"
+    environment:
+      PYTHONPATH: src
+      CONFIG_ENV: docker
+    networks:
+      - vulsa_net
+    depends_on:
+      pgbouncer:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app:app --host 0.0.0.0 --port 9100 --reload
+    
   db:
     image: postgres:16-bullseye
     env_file:
-      - ../config/.env
+      - .env
     ports:
       - "5433:5432"
     volumes:
@@ -16,6 +37,30 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  pgbouncer:
+    image: edoburu/pgbouncer:v1.25.1-p0
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      LISTEN_PORT: 6432
+      AUTH_TYPE: plain
+
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 500
+      DEFAULT_POOL_SIZE: 20
+    ports:
+      - "6432:6432"
+    networks:
+      - vulsa_net
 
   redis:
     image: redis:7-alpine
@@ -71,7 +116,7 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:23.12
     env_file:
-      - ../config/.env
+      - .env
     container_name: clickhouse
     ports:
       - "8123:8123"
@@ -82,15 +127,12 @@ services:
       - vulsa_net
   
   kafka-clicks-resolver:
-    build:
-      context: ..
-      dockerfile: build/Dockerfile
     image: vulsa
     depends_on:
       kafka:
         condition: service_healthy
-      db:
-        condition: service_healthy
+      pgbouncer:
+        condition: service_started
     networks:
       - vulsa_net
     environment:
@@ -104,8 +146,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      db:
-        condition: service_healthy
+      pgbouncer:
+        condition: service_started
     networks:
       - vulsa_net
     environment:
@@ -123,19 +165,3 @@ volumes:
 networks:
   vulsa_net:
     driver: bridge
-
-
-
-
-
-  # app:
-  #   build:
-  #     context: ..
-  #     dockerfile: build/Dockerfile
-  #   container_name: app
-  #   depends_on:
-  #     - db
-  #   ports:
-  #     - "8000:8000"
-  #   networks:
-  #     - vulsa_net

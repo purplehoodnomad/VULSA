@@ -9,16 +9,23 @@ from infrastructure.clickhouse.client import ClickHouseClient
 from workers.dependencies import get_resolve_clicks_usecase, WorkerResources
 
 
-async def handle_message(container: Container, consumer: AIOKafkaConsumer, clickhouse: ClickHouseClient):
+async def worker_loop(
+    stop_event: asyncio.Event,
+    container: Container,
+    consumer: AIOKafkaConsumer,
+    clickhouse: ClickHouseClient
+):
     session_manager = container.session_manager()
     session_manager.init(settings.database.get_url())
 
     try:
-        async with session_manager.session() as session:
-            resources = WorkerResources(session=session, consumer=consumer, clickhouse=clickhouse)
+        while not stop_event.is_set():
+            async with session_manager.session() as session:
+                resources = WorkerResources(session=session, consumer=consumer, clickhouse=clickhouse)
 
-            usecase = await get_resolve_clicks_usecase(resources)
-            await usecase.execute()
+                usecase = await get_resolve_clicks_usecase(resources)
+                await usecase.execute()
+            await asyncio.sleep(2)
     finally:
         await session_manager.close()
 
@@ -38,14 +45,17 @@ async def main():
     clickhouse = container.clickhouse_client()
     clickhouse.init(settings.clickhouse.get_url())
 
-    print("Kafka resolve_clicks worker started")
+    stop_event = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, stop_event.set)
+    
+    print("Resolve Clicks worker started")
+    await worker_loop(stop_event, container, consumer, clickhouse)
 
-    try:
-        await handle_message(container, consumer, clickhouse)
-
-    finally:
-        await kafka.close()
-        clickhouse.close()
+    await kafka.close()
+    clickhouse.close()
+    print("Resolve Clicks worker stopped")
 
 
 def run():

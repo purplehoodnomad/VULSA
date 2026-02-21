@@ -6,13 +6,19 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from infrastructure.sqlalchemy.session import get_async_connection
+from infrastructure.cache.redis.client import RedisClient
+from infrastructure.cache.redis.di.injection import get_redis_client
+from infrastructure.broker.kafka.client import KafkaClient
+from infrastructure.broker.kafka.di.injection import get_kafka_client
+from infrastructure.clickhouse.client import ClickHouseClient
+from infrastructure.clickhouse.di.injection import get_clickhouse_client
 
 
 router = APIRouter(prefix="/health")
 
 
 @router.get("/live")
-async def liveness_probe() -> dict[str, Any]:
+async def live() -> dict[str, Any]:
     """Checks API health."""
     return {
         "status": "UP",
@@ -21,25 +27,49 @@ async def liveness_probe() -> dict[str, Any]:
 
 
 @router.get("/ready")
-async def readiness_probe(connection: AsyncConnection = Depends(get_async_connection)) -> dict[str, Any]:
-    """Checks DB connection."""
+async def ready(
+    postgres_connection: AsyncConnection = Depends(get_async_connection),
+    redis: RedisClient = Depends(get_redis_client),
+    kafka: KafkaClient = Depends(get_kafka_client),
+    clickhouse: ClickHouseClient = Depends(get_clickhouse_client)
+) -> dict[str, Any]:
+    """Checks all connections."""
+    checks = {}
+    checks["api"] = {"status": "UP"}
+
+    # Postgres connection
     try:
-        await connection.execute(text("SELECT 1"))
-        return {
-            "status": "UP",
-            "checks": {
-                "database": {"status": "UP"},
-                "service": {"status": "UP"},
-            },
-            "timestamp": datetime.now(timezone.utc),
-        }
-    except Exception as e:
-        print(e)
-        return {
-            "status": "DOWN",
-            "checks": {
-                "database": {"status": "DOWN"},
-                "service": {"status": "UP"},
-            },
-            "timestamp": datetime.now(timezone.utc),
-        }
+        await postgres_connection.execute(text("SELECT 1"))
+        checks["database"] = {"status": "UP"}
+    except Exception:
+        checks["database"] = {"status": "DOWN"}
+    
+    # Redis connection
+    try:
+        pong = await redis.client.ping() # type: ignore
+        if pong:
+            checks["redis"] = {"status": "UP"}
+        else:
+            checks["redis"] = {"status": "DOWN"}
+    except Exception:
+        checks["redis"] = {"status": "DOWN"}
+    
+    # Kafka connection
+    try:
+        await kafka.get_producer()
+        checks["kafka"] = {"status": "UP"}
+    except Exception:
+        checks["kafka"] = {"status": "DOWN"}
+    
+    # ClickHouse connection
+    try:
+        with clickhouse.connect() as connection:
+            connection.execute(text("SELECT 1"))
+            checks["clickhouse"] = {"status": "UP"}
+    except Exception:
+        checks["clickhouse"] = {"status": "DOWN"}
+    
+    return {
+        "checks": checks,
+        "timestamp": datetime.now(timezone.utc),
+    }
