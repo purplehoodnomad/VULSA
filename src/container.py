@@ -3,6 +3,7 @@ from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Singleton, Factory
 
 from infrastructure.sqlalchemy.session_manager import DatabaseSessionManager
+from infrastructure.clickhouse.client import ClickHouseClient
 
 from infrastructure.postgresql.uow.link import PostgresLinkUnitOfWork
 from infrastructure.postgresql.uow.user import PostgresUserUnitOfWork
@@ -40,6 +41,8 @@ class Container(DeclarativeContainer):
 
     kafka_client = Singleton(KafkaClient)
 
+    clickhouse_client = Singleton(ClickHouseClient)
+
 
     @classmethod
     def get_user_uow_factory(cls):
@@ -57,7 +60,8 @@ class Container(DeclarativeContainer):
             modules=[
                 "infrastructure.sqlalchemy.session",
                 "infrastructure.cache.redis.di.injection",
-                "infrastructure.broker.kafka.di.injection"
+                "infrastructure.broker.kafka.di.injection",
+                "infrastructure.clickhouse.di.injection"
             ]
         )
         return container

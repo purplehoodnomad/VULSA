@@ -28,7 +28,7 @@ class LinkORM(Base):
     )
 
     user: Mapped["UserORM"] = relationship("UserORM", back_populates="links", passive_deletes=True) # type: ignore
-    clicks: Mapped[list["ClickStampORM"]] = relationship(back_populates="link", cascade="all, delete, delete-orphan") # type: ignore
+    # clicks: Mapped[list["ClickStampORM"]] = relationship(back_populates="link", cascade="all, delete, delete-orphan") # type: ignore
 
 
     id: Mapped[UUID] = mapped_column(

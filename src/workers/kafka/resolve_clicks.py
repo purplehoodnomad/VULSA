@@ -5,16 +5,17 @@ from aiokafka import AIOKafkaConsumer
 from container import Container
 from settings import settings
 from infrastructure.broker.topics import Topic
+from infrastructure.clickhouse.client import ClickHouseClient
 from workers.dependencies import get_resolve_clicks_usecase, WorkerResources
 
 
-async def handle_message(container: Container, consumer: AIOKafkaConsumer):
+async def handle_message(container: Container, consumer: AIOKafkaConsumer, clickhouse: ClickHouseClient):
     session_manager = container.session_manager()
     session_manager.init(settings.database.get_url())
 
     try:
         async with session_manager.session() as session:
-            resources = WorkerResources(session=session, consumer=consumer)
+            resources = WorkerResources(session=session, consumer=consumer, clickhouse=clickhouse)
 
             usecase = await get_resolve_clicks_usecase(resources)
             await usecase.execute()
@@ -34,14 +35,17 @@ async def main():
         group_id="resolve_clicks_group",
         auto_offset_reset="latest",
     )
+    clickhouse = container.clickhouse_client()
+    clickhouse.init(settings.clickhouse.get_url())
 
     print("Kafka resolve_clicks worker started")
 
     try:
-        await handle_message(container, consumer)
+        await handle_message(container, consumer, clickhouse)
 
     finally:
         await kafka.close()
+        clickhouse.close()
 
 
 def run():

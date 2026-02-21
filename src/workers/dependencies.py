@@ -8,6 +8,7 @@ from settings import settings
 from infrastructure.uow.builders import get_link_uow
 from domain.link.cache import AbstractLinkCache
 from infrastructure.cache.redis.repositories.link_cache import RedisLinkCache
+from infrastructure.clickhouse.client import ClickHouseClient
 
 from usecase.link.delete_expired_links.abstract import AbstractDeleteExpiredLinksUseCase
 from usecase.link.sync_cache.abstract import AbstractSyncCacheUseCase
@@ -23,6 +24,7 @@ class WorkerResources:
     session: AsyncSession
     cache: AbstractLinkCache | None = None
     consumer: AIOKafkaConsumer | None = None
+    clickhouse: ClickHouseClient | None = None
 
 
 class WorkerContext:
@@ -33,7 +35,6 @@ class WorkerContext:
     ):
         self._container = container
         self._cache = None
-        self._kafka = None
 
         self._session_manager = self._container.session_manager()
         self._session_manager.init(settings.database.get_url())
@@ -80,7 +81,7 @@ async def get_delete_expired_links_usecase(resources: WorkerResources) -> Abstra
 
 
 async def get_resolve_clicks_usecase(resources: WorkerResources) -> AbstractResolveClicksUseCase:
-    uow = get_link_uow(resources.session)
+    uow = get_link_uow(resources.session, resources.clickhouse) # type: ignore
 
     return ResolveClicksUseCase(
         uow=uow,

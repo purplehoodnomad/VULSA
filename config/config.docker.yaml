@@ -19,3 +19,10 @@ cache:
 kafka:
   host: "kafka"
   port: "9092"
+
+clickhouse:
+  user: "user"
+  password: "password"
+  host: "clickhouse"
+  port: 8123
+  name: "vulsa_ch"

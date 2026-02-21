@@ -50,11 +50,23 @@ class _KafkaSettings(BaseSettings):
         return f"{self.host}:{self.port}"
 
 
+class _ClickHouseSettings(BaseSettings):
+    user: str
+    password: SecretStr
+    host: str = "localhost"
+    port: int = 8123
+    name: str = 'clickhouse'
+
+    def get_url(self) -> str:
+        return f"clickhouse+http://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
+
+
 class _Settings(BaseSettings):
     app: _AppSettings
     database: _DatabaseSettings
     cache: _CacheSettings
     kafka: _KafkaSettings
+    clickhouse: _ClickHouseSettings
 
     @classmethod
     def load(cls) -> "_Settings":

@@ -3,16 +3,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from container import Container
 from infrastructure.sqlalchemy.session import get_async_session
+from infrastructure.clickhouse.di.injection import get_clickhouse_client
 
 from infrastructure.uow.link import AbstractLinkUnitOfWork
 from infrastructure.uow.user import AbstractUserUnitOfWork
 from infrastructure.uow.auth import AbstractAuthUnitOfWork
+from infrastructure.clickhouse.client import ClickHouseClient
 
 
 def build_link_uow(
     session: AsyncSession = Depends(get_async_session),
+    ch_client: ClickHouseClient = Depends(get_clickhouse_client)
 ) -> AbstractLinkUnitOfWork:
-    return Container.link_uow_factory(session=session)
+    return Container.link_uow_factory(session=session, ch_client=ch_client)
 
 
 def build_user_uow(

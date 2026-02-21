@@ -1,0 +1,1 @@
+from .click_stamp import ClickStampCH

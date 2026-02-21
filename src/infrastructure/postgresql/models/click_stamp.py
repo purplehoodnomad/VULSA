@@ -14,8 +14,9 @@ from domain.value_objects.link import Short, ClickStamp, ClickStampId
 
 class ClickStampORM(Base):
     __tablename__ = "click_stamp"
+    __abstract__ = True
 
-    link: Mapped["LinkORM"] = relationship("LinkORM", back_populates="clicks", passive_deletes=True) # type: ignore
+    # link: Mapped["LinkORM"] = relationship("LinkORM", back_populates="clicks", passive_deletes=True) # type: ignore
 
     id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),
@@ -25,7 +26,7 @@ class ClickStampORM(Base):
 
     link_id: Mapped[UUID] = mapped_column(
         UUIDAlchemy(as_uuid=True),
-        ForeignKey('link.id', ondelete="CASCADE"),
+        # ForeignKey('link.id', ondelete="CASCADE"),
         nullable=False
     )
 

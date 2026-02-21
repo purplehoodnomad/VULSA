@@ -36,6 +36,7 @@ class ResolveClicksUseCase(AbstractResolveClicksUseCase):
 
             unique_shorts = {Short(e.short) for e in events}
             async with self.uow as uow:
+                print(type(uow.click_repo))
                 link_entities = await uow.link_repo.get_batch(unique_shorts)
                 shorts_mapped = {entity.short.value: entity.link_id for entity in link_entities}
 

@@ -1,4 +1,5 @@
-from sqlalchemy import select, delete as sql_delete
+from typing import Iterable
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.postgresql.models import ClickStampORM
@@ -27,7 +28,7 @@ class PostgresClickStampRepository(AbstractClickStampRepository):
         raise NotImplementedError
     
     
-    async def create_batch(self, entities: set[ClickStamp]) -> None:
+    async def create_batch(self, entities: Iterable[ClickStamp]) -> None:
         if not entities:
             return
 
