@@ -1,15 +1,18 @@
-from kafka import KafkaProducer as KafkaProducer_
+from aiokafka import AIOKafkaProducer
 
+from infrastructure.broker.abstract.producer import AbstractProducer
 from infrastructure.broker.topics import Topic
-from .serializers import serialize
 
 
-class KafkaProducer:
-    def __init__(self, client: KafkaProducer_):
-        self._client = client
+class KafkaProducer(AbstractProducer):
+    def __init__(self, *args, **kwargs):
+        self._producer = AIOKafkaProducer(*args, **kwargs)
 
-    async def publish(self, topic: Topic, message: dict) -> None:
-        await self._client.send(
-            topic=topic,
-            value=serialize(message),
-        )
+    async def send(self, topic: Topic, message: dict) -> None:
+        return await self._producer.send(topic.value, value=message)
+
+    async def start(self) -> None:
+        await self._producer.start()
+
+    async def stop(self) -> None:
+        await self._producer.stop()

@@ -21,6 +21,6 @@ app.conf.beat_schedule = {
     },
     "cleanup-links-daily": {
         "task": "delete_expired_links",
-        "schedule": timedelta(hours=24)
+        "schedule": timedelta(seconds=10)
     }
 }

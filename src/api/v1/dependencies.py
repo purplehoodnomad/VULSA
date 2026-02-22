@@ -6,7 +6,7 @@ from usecase.common.actor import Actor, ActorType
 from domain.value_objects.token import TokenVO
 
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.uow.builders import get_link_uow
+from infrastructure.uow.dependencies import get_link_uow
 from api.v1.user.dependencies import get_get_current_user_usecase
 
 from usecase.user.get_current_user.abstract import AbstractGetCurrentUserUseCase

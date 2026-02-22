@@ -59,9 +59,9 @@ class Container(DeclarativeContainer):
         container.wire(
             modules=[
                 "infrastructure.sqlalchemy.session",
-                "infrastructure.cache.redis.di.injection",
-                "infrastructure.broker.kafka.di.injection",
-                "infrastructure.clickhouse.di.injection"
+                "infrastructure.cache.redis.dependencies",
+                "infrastructure.broker.kafka.dependencies",
+                "infrastructure.clickhouse.dependencies"
             ]
         )
         return container

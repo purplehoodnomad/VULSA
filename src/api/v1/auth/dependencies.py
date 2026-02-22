@@ -2,7 +2,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.uow.builders import get_auth_uow
+from infrastructure.uow.dependencies import get_auth_uow
 
 from usecase.auth.refresh.abstract import AbstractRefreshAccessTokenUseCase
 from usecase.auth.login.abstract import AbstractLoginUseCase

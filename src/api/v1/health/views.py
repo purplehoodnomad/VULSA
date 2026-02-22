@@ -7,11 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 from infrastructure.sqlalchemy.session import get_async_connection
 from infrastructure.cache.redis.client import RedisClient
-from infrastructure.cache.redis.di.injection import get_redis_client
+from infrastructure.cache.redis.dependencies import get_redis_client
 from infrastructure.broker.kafka.client import KafkaClient
-from infrastructure.broker.kafka.di.injection import get_kafka_client
+from infrastructure.broker.kafka.dependencies import get_kafka_client
 from infrastructure.clickhouse.client import ClickHouseClient
-from infrastructure.clickhouse.di.injection import get_clickhouse_client
+from infrastructure.clickhouse.dependencies import get_clickhouse_client
 
 
 router = APIRouter(prefix="/health")

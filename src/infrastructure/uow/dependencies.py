@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
 from infrastructure.clickhouse.client import ClickHouseClient
-from infrastructure.clickhouse.di.injection import get_clickhouse_client
-from infrastructure.postgresql.di.injection import build_link_uow, build_user_uow, build_auth_uow
+from infrastructure.clickhouse.dependencies import get_clickhouse_client
+from infrastructure.postgresql.dependencies import build_link_uow, build_user_uow, build_auth_uow
 from infrastructure.uow.link import AbstractLinkUnitOfWork
 from infrastructure.uow.user import AbstractUserUnitOfWork
 from infrastructure.uow.auth import AbstractAuthUnitOfWork

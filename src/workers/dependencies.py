@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiokafka import AIOKafkaConsumer
 
 from workers.celery.container import container
 from settings import settings
 
-from infrastructure.uow.builders import get_link_uow
+from infrastructure.broker.abstract.consumer import AbstractConsumer
+from infrastructure.uow.dependencies import get_link_uow
 from domain.link.cache import AbstractLinkCache
 from infrastructure.cache.redis.repositories.link_cache import RedisLinkCache
 from infrastructure.clickhouse.client import ClickHouseClient
@@ -23,7 +23,7 @@ from usecase.link.resolve_clicks.implementation import ResolveClicksUseCase
 class WorkerResources:
     session: AsyncSession
     cache: AbstractLinkCache | None = None
-    consumer: AIOKafkaConsumer | None = None
+    consumer: AbstractConsumer | None = None
     clickhouse: ClickHouseClient | None = None
 
 

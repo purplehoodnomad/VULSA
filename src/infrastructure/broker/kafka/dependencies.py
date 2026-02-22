@@ -1,7 +1,7 @@
 from fastapi import Depends
 from dependency_injector.wiring import inject, Provide
 
-from aiokafka import AIOKafkaProducer
+from infrastructure.broker.kafka.producer import KafkaProducer
 
 from container import Container
 
@@ -13,5 +13,5 @@ async def get_kafka_client(client: KafkaClient = Depends(Provide[Container.kafka
     return client
 
 
-async def get_producer(client: KafkaClient = Depends(get_kafka_client)) -> AIOKafkaProducer:
+async def get_producer(client: KafkaClient = Depends(get_kafka_client)) -> KafkaProducer:
     return await client.get_producer()

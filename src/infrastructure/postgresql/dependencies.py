@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from container import Container
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.clickhouse.di.injection import get_clickhouse_client
+from infrastructure.clickhouse.dependencies import get_clickhouse_client
 
 from infrastructure.uow.link import AbstractLinkUnitOfWork
 from infrastructure.uow.user import AbstractUserUnitOfWork

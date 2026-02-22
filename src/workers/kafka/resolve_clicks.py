@@ -1,6 +1,7 @@
 import asyncio
 import signal
-from aiokafka import AIOKafkaConsumer
+
+from infrastructure.broker.abstract.consumer import AbstractConsumer
 
 from container import Container
 from settings import settings
@@ -12,7 +13,7 @@ from workers.dependencies import get_resolve_clicks_usecase, WorkerResources
 async def worker_loop(
     stop_event: asyncio.Event,
     container: Container,
-    consumer: AIOKafkaConsumer,
+    consumer: AbstractConsumer,
     clickhouse: ClickHouseClient
 ):
     session_manager = container.session_manager()
@@ -25,10 +26,9 @@ async def worker_loop(
 
                 usecase = await get_resolve_clicks_usecase(resources)
                 await usecase.execute()
-            await asyncio.sleep(2)
+            await asyncio.sleep(2) # sync period
     finally:
         await session_manager.close()
-
 
 
 async def main():

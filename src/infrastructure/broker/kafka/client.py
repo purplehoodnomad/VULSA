@@ -1,31 +1,32 @@
 from asyncio import Lock
 
-from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
-
+from infrastructure.broker.abstract.client import AbstractBrokerClient
+from infrastructure.broker.kafka.producer import KafkaProducer
+from infrastructure.broker.kafka.consumer import KafkaConsumer
 from infrastructure.broker.topics import Topic
 from infrastructure.broker.kafka.serializers import serialize, deserialize
 
 
-class KafkaClient:
+class KafkaClient(AbstractBrokerClient):
     def __init__(self) -> None:
         self._bootstrap: str | None = None
-        self._producer: AIOKafkaProducer | None = None
-        self._consumers: dict[Topic, AIOKafkaConsumer] = {}
+        self._producer: KafkaProducer | None = None
+        self._consumers: dict[Topic, KafkaConsumer] = {}
         self._producer_lock = Lock()
         self._consumer_locks: dict[Topic, Lock] = {}
 
-    def init(self, bootstrap_servers: str) -> None:
+    def init(self, dsn: str) -> None:
         if self._bootstrap is None:
-            self._bootstrap = bootstrap_servers
+            self._bootstrap = dsn
 
 
-    async def get_producer(self, **kwargs) -> AIOKafkaProducer:
+    async def get_producer(self, **kwargs) -> KafkaProducer:
         if self._producer is None:
             async with self._producer_lock:
                 if self._producer is None:
                     if self._bootstrap is None:
                         raise RuntimeError("KafkaClient not initialized")
-                    producer = AIOKafkaProducer(
+                    producer = KafkaProducer(
                         bootstrap_servers=self._bootstrap,
                         key_serializer=serialize,
                         value_serializer=serialize,
@@ -36,7 +37,7 @@ class KafkaClient:
         return self._producer
 
 
-    async def get_consumer(self, topic: Topic, **kwargs) -> AIOKafkaConsumer:
+    async def get_consumer(self, topic: Topic, **kwargs) -> KafkaConsumer:
         if topic in self._consumers:
             return self._consumers[topic]
 
@@ -47,7 +48,7 @@ class KafkaClient:
 
             if self._bootstrap is None:
                 raise RuntimeError("KafkaClient not initialized")
-            consumer = AIOKafkaConsumer(
+            consumer = KafkaConsumer(
                 topic.value,
                 bootstrap_servers=self._bootstrap,
                 key_deserializer=deserialize,

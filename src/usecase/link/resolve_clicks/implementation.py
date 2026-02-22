@@ -1,10 +1,8 @@
-from asyncio import sleep
-from aiokafka import AIOKafkaConsumer
 from datetime import datetime
 
 from .abstract import AbstractResolveClicksUseCase
-
 from infrastructure.uow.link import AbstractLinkUnitOfWork
+from infrastructure.broker.abstract.consumer import AbstractConsumer
 
 from usecase.redirect.utils.dto import ClickMetadataDTO
 from domain.value_objects.link import Short, ClickStamp
@@ -14,7 +12,7 @@ class ResolveClicksUseCase(AbstractResolveClicksUseCase):
     def __init__(
         self,
         uow: AbstractLinkUnitOfWork,
-        consumer: AIOKafkaConsumer
+        consumer: AbstractConsumer
     ):
         self.uow = uow
         self.consumer = consumer
@@ -23,7 +21,7 @@ class ResolveClicksUseCase(AbstractResolveClicksUseCase):
         events: list[ClickMetadataDTO] = []
         clicks: set[ClickStamp] = set()
 
-        res = await self.consumer.getmany()
+        res: dict[str, list] = await self.consumer.getmany() # type: ignore
         for records in res.values():
             for msg in records:
                 if msg.value is None:

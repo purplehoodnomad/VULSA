@@ -2,7 +2,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.uow.builders import get_user_uow
+from infrastructure.uow.dependencies import get_user_uow
 
 from usecase.admin.add_permission.abstract import AbstractAddPermissionUseCase
 from usecase.admin.remove_permission.abstract import AbstractRemovePermissionUseCase

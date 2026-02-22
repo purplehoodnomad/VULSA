@@ -2,8 +2,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.uow.builders import get_user_uow
-from infrastructure.uow.builders import get_auth_uow
+from infrastructure.uow.dependencies import get_user_uow
+from infrastructure.uow.dependencies import get_auth_uow
 
 from usecase.user.create_user.abstract import AbstractCreateUserUseCase
 from usecase.user.get_user_by_id.abstract import AbstractGetUserByIdUseCase

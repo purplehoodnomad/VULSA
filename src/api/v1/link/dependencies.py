@@ -2,8 +2,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.sqlalchemy.session import get_async_session
-from infrastructure.uow.builders import get_link_uow
-from infrastructure.cache.redis.di.injection import get_link_cache
+from infrastructure.uow.dependencies import get_link_uow
+from infrastructure.cache.redis.dependencies import get_link_cache
 
 from usecase.link.create_link.abstract import AbstractCreateLinkUseCase
 from usecase.link.get_links_list.abstract import AbstractGetLinksListUseCase
