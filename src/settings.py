@@ -18,6 +18,7 @@ class _AppSettings(BaseSettings):
     port: int = 8000
     secret_key: SecretStr
     debug: bool = True
+    log_level: str = "INFO"
 
     def get_app_url(self) -> str:
         return f"http://{self.host}:{self.port}"

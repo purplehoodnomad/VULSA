@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 
@@ -6,9 +7,14 @@ from api.v1 import routers as api_v1
 from redirect import routers as redirect
 from container import Container
 from settings import settings
+from middleware import setup_logging, RequestLoggingMiddleware
 
 from domain.exceptions import DomainException
 from api.v1.exceptions import domain_exception_handler
+
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -40,6 +46,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_middleware(RequestLoggingMiddleware)
 app.add_exception_handler(DomainException, domain_exception_handler)
 
 app.include_router(redirect.router)

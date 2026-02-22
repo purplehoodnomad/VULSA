@@ -1,9 +1,14 @@
 from typing import cast
+import logging
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
 from domain.exceptions import DomainException
+
+
+logger = logging.getLogger(__name__)
+
 
 DOMAIN_EXCEPTION_HTTP_STATUS: dict[str, int] = {
     "INVALID_VALUE": status.HTTP_400_BAD_REQUEST,
@@ -41,6 +46,16 @@ async def domain_exception_handler(
 ):
     domain_exc = cast(DomainException, exc)
     status_code = DOMAIN_EXCEPTION_HTTP_STATUS.get(domain_exc.code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    if status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
+        logger.exception(exc)
+        return JSONResponse(
+            status_code=status_code,
+            content={
+                "error": "INTERNAL_SERVER_ERROR",
+                "message": "Internal server error",
+            }
+        )
 
     return JSONResponse(
         status_code=status_code,

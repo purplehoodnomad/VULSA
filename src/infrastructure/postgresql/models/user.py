@@ -39,7 +39,7 @@ class UserORM(Base):
         nullable=False
     )
 
-    role: Mapped[str] = mapped_column( # TODO: попроьбовать роль засунуть ORM
+    role: Mapped[str] = mapped_column(
         String(255),
         ForeignKey("roles.name"),
         nullable=False,

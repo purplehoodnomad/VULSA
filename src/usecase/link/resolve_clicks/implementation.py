@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 
 from .abstract import AbstractResolveClicksUseCase
 from infrastructure.uow.link import AbstractLinkUnitOfWork
@@ -6,6 +7,9 @@ from infrastructure.broker.abstract.consumer import AbstractConsumer
 
 from usecase.redirect.utils.dto import ClickMetadataDTO
 from domain.value_objects.link import Short, ClickStamp
+
+
+logger = logging.getLogger(__name__)
 
 
 class ResolveClicksUseCase(AbstractResolveClicksUseCase):
@@ -48,5 +52,4 @@ class ResolveClicksUseCase(AbstractResolveClicksUseCase):
                 await uow.click_repo.create_batch(clicks)
                 await self.consumer.commit()
         except Exception as e:
-            # TODO: Add handler
-            raise
+            logger.exception(e)

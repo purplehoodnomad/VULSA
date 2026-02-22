@@ -1,13 +1,19 @@
 import asyncio
 import signal
+import logging
 
 from infrastructure.broker.abstract.consumer import AbstractConsumer
 
 from container import Container
 from settings import settings
+from middleware import setup_logging
 from infrastructure.broker.topics import Topic
 from infrastructure.clickhouse.client import ClickHouseClient
 from workers.dependencies import get_resolve_clicks_usecase, WorkerResources
+
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 async def worker_loop(
@@ -50,12 +56,12 @@ async def main():
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, stop_event.set)
     
-    print("Resolve Clicks worker started")
+    logger.info("Resolve Clicks worker started")
     await worker_loop(stop_event, container, consumer, clickhouse)
 
     await kafka.close()
     clickhouse.close()
-    print("Resolve Clicks worker stopped")
+    logger.info("Resolve Clicks worker stopped")
 
 
 def run():
