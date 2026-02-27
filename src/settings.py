@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
-from pydantic import SecretStr
+from pydantic import SecretStr, BaseModel
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 BASE_DIR = Path(__file__).resolve().parent
@@ -43,9 +43,13 @@ class _CacheSettings(BaseSettings):
         return f"redis://{self.host}:{self.port}/{db_num}"
 
 
+class _KafkaTopics(BaseModel):
+    link_clicked: str
+
 class _KafkaSettings(BaseSettings):
     host: str = "localhost"
     port: int = 9092
+    topics: _KafkaTopics
 
     def get_url(self) -> str:
         return f"{self.host}:{self.port}"

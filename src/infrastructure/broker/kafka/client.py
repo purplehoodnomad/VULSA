@@ -3,7 +3,6 @@ from asyncio import Lock
 from infrastructure.broker.abstract.client import AbstractBrokerClient
 from infrastructure.broker.kafka.producer import KafkaProducer
 from infrastructure.broker.kafka.consumer import KafkaConsumer
-from infrastructure.broker.topics import Topic
 from infrastructure.broker.kafka.serializers import serialize, deserialize
 
 
@@ -11,9 +10,9 @@ class KafkaClient(AbstractBrokerClient):
     def __init__(self) -> None:
         self._bootstrap: str | None = None
         self._producer: KafkaProducer | None = None
-        self._consumers: dict[Topic, KafkaConsumer] = {}
+        self._consumers: dict[str, KafkaConsumer] = {}
         self._producer_lock = Lock()
-        self._consumer_locks: dict[Topic, Lock] = {}
+        self._consumer_locks: dict[str, Lock] = {}
 
     def init(self, dsn: str) -> None:
         if self._bootstrap is None:
@@ -37,7 +36,7 @@ class KafkaClient(AbstractBrokerClient):
         return self._producer
 
 
-    async def get_consumer(self, topic: Topic, **kwargs) -> KafkaConsumer:
+    async def get_consumer(self, topic: str, **kwargs) -> KafkaConsumer:
         if topic in self._consumers:
             return self._consumers[topic]
 
@@ -49,7 +48,7 @@ class KafkaClient(AbstractBrokerClient):
             if self._bootstrap is None:
                 raise RuntimeError("KafkaClient not initialized")
             consumer = KafkaConsumer(
-                topic.value,
+                topic,
                 bootstrap_servers=self._bootstrap,
                 key_deserializer=deserialize,
                 value_deserializer=deserialize,

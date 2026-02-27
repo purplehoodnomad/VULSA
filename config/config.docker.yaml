@@ -19,6 +19,8 @@ cache:
 kafka:
   host: "kafka"
   port: "9092"
+  topics:
+    link_clicked: "link_clicked"
 
 clickhouse:
   user: "user"

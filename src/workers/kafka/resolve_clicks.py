@@ -7,7 +7,6 @@ from infrastructure.broker.abstract.consumer import AbstractConsumer
 from container import Container
 from settings import settings
 from middleware import setup_logging
-from infrastructure.broker.topics import Topic
 from infrastructure.clickhouse.client import ClickHouseClient
 from workers.dependencies import get_resolve_clicks_usecase, WorkerResources
 
@@ -44,7 +43,7 @@ async def main():
     kafka.init(settings.kafka.get_url())
 
     consumer = await kafka.get_consumer(
-        Topic.LINK_CLICKED,
+        settings.kafka.topics.link_clicked,
         group_id="resolve_clicks_group",
         auto_offset_reset="latest",
     )

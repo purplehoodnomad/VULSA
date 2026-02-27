@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from datetime import datetime, timezone
+from settings import settings
 
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +9,6 @@ from infrastructure.sqlalchemy.session import get_async_session
 from infrastructure.uow.dependencies import get_link_uow
 
 from infrastructure.broker.abstract.producer import AbstractProducer
-from infrastructure.broker.topics import Topic
 from usecase.redirect.utils.dto import ClickMetadataDTO
 
 from usecase.redirect.abstract import AbstractLinkRedirectUseCase
@@ -49,6 +49,6 @@ async def register_click(
     data["timestamp"] = data["timestamp"].isoformat()
 
     await producer.send(
-        topic=Topic.LINK_CLICKED,
+        topic=settings.kafka.topics.link_clicked,
         message=data
     )

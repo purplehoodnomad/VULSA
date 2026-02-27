@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
 
-from infrastructure.broker.topics import Topic
-
 
 class AbstractProducer(ABC):
     @abstractmethod
-    async def send(self, topic: Topic, message: dict) -> None:
+    async def send(self, topic: str, message: dict) -> None:
         raise NotImplementedError()
 
     @abstractmethod

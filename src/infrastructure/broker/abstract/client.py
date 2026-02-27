@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from infrastructure.broker.abstract.producer import AbstractProducer
 from infrastructure.broker.abstract.consumer import AbstractConsumer
-from infrastructure.broker.topics import Topic
 
 
 class AbstractBrokerClient(ABC):
@@ -15,7 +14,7 @@ class AbstractBrokerClient(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get_consumer(self, topic: Topic, **kwargs) -> AbstractConsumer:
+    async def get_consumer(self, topic: str, **kwargs) -> AbstractConsumer:
         raise NotImplementedError()
 
     @abstractmethod
