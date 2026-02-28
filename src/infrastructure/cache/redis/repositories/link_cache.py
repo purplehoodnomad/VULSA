@@ -88,7 +88,7 @@ repeat
             if short then
                 table.insert(result, short)
                 table.insert(result, delta)
-                redis.call("SET", delta_key, 0)
+                redis.call("SET", delta_key, 0, "KEEPTTL")
             end
         end
     end

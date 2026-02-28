@@ -203,16 +203,17 @@ class PostgresLinkRepository(AbstractLinkRepository):
         values_clause_parts = []
         params = {}
 
-        for i, (short, delta) in enumerate(deltas.items()):
-            values_clause_parts.append(f"(:short_{i}, :delta_{i})")
-            params[f"short_{i}"] = short
-            params[f"delta_{i}"] = delta
+        for short, delta in deltas.items():
+            short_escaped = short.replace("'", "''")
+            values_clause_parts.append(f"('{short_escaped}'::varchar, {delta}::integer)")
 
         values_clause = ", ".join(values_clause_parts)
 
         stmt = text(f"""
-            UPDATE links AS l
-            SET times_used = l.times_used + v.delta
+            UPDATE link AS l
+            SET
+                times_used = l.times_used + v.delta,
+                last_used = CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
             FROM (VALUES {values_clause}) AS v(short, delta)
             WHERE l.short = v.short
         """)

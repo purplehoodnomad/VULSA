@@ -23,8 +23,8 @@ app.conf.beat_schedule = {
         "task": "sync_links_cache",
         "schedule": timedelta(seconds=3)
     },
-    # "cleanup-links-daily": {
-    #     "task": "delete_expired_links",
-    #     "schedule": timedelta(seconds=10)
-    # }
+    "cleanup-links-in-hour": {
+        "task": "delete_expired_links",
+        "schedule": timedelta(seconds=3600)
+    }
 }
