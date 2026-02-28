@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional, List
 
-from sqlalchemy import select, delete, and_, not_, or_
+from sqlalchemy import select, delete, and_, not_, or_, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -194,3 +194,27 @@ class PostgresLinkRepository(AbstractLinkRepository):
         scalars = result.scalars().all()
         
         return [link_orm.to_entity() for link_orm in scalars]
+
+
+    async def increment_redirects_bulk(self, deltas: dict[str, int]) -> None:
+        if not deltas:
+            return
+
+        values_clause_parts = []
+        params = {}
+
+        for i, (short, delta) in enumerate(deltas.items()):
+            values_clause_parts.append(f"(:short_{i}, :delta_{i})")
+            params[f"short_{i}"] = short
+            params[f"delta_{i}"] = delta
+
+        values_clause = ", ".join(values_clause_parts)
+
+        stmt = text(f"""
+            UPDATE links AS l
+            SET times_used = l.times_used + v.delta
+            FROM (VALUES {values_clause}) AS v(short, delta)
+            WHERE l.short = v.short
+        """)
+
+        await self._session.execute(stmt, params)

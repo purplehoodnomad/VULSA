@@ -19,12 +19,12 @@ app.autodiscover_tasks(["workers.celery.tasks"])
 
 
 app.conf.beat_schedule = {
-    "sync-cache-every-10-secs": {
+    "sync-cache-every-3-secs": {
         "task": "sync_links_cache",
-        "schedule": timedelta(seconds=10)
+        "schedule": timedelta(seconds=3)
     },
-    "cleanup-links-daily": {
-        "task": "delete_expired_links",
-        "schedule": timedelta(seconds=10)
-    }
+    # "cleanup-links-daily": {
+    #     "task": "delete_expired_links",
+    #     "schedule": timedelta(seconds=10)
+    # }
 }

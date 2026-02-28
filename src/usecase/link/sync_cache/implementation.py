@@ -18,8 +18,12 @@ class SyncCacheUseCase(AbstractSyncCacheUseCase):
 	async def execute(self) -> None:
 		deltas = await self.cache.gather_click_deltas()
 
-		for short, delta in deltas.items():
+		if deltas:
 			async with self.uow as uow:
-				link = await uow.link_repo.get_by_short(Short(short))
-				link.consume_redirect(redirect_delta=delta)
-				await uow.link_repo.update(link)
+				await uow.link_repo.increment_redirects_bulk(deltas)
+
+		# for short, delta in deltas.items():
+		# 	async with self.uow as uow:
+		# 		link = await uow.link_repo.get_by_short(Short(short))
+		# 		link.consume_redirect(redirect_delta=delta)
+		# 		await uow.link_repo.update(link)

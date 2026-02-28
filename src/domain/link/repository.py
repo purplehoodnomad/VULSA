@@ -13,15 +13,15 @@ from .entity import Link
 class AbstractLinkRepository(AbstractRepository[Link], ABC):
     @abstractmethod
     async def get_by_short(self, short: Short) -> Link:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     async def get_by_edit_key(self, edit_key: AnonymousEditKey) -> Link:
-        raise NotImplementedError
+        raise NotImplementedError()
     
     @abstractmethod
     async def is_short_taken(self, short: Short) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError()
     
     @abstractmethod
     async def list(self,
@@ -36,7 +36,7 @@ class AbstractLinkRepository(AbstractRepository[Link], ABC):
         has_expiration_date: Optional[bool] = None,
         has_redirect_limit: Optional[bool] = None,
     ) -> List[Link]:
-        raise NotImplementedError
+        raise NotImplementedError()
     
     @abstractmethod
     async def find_for_cleanup(self,
@@ -47,14 +47,19 @@ class AbstractLinkRepository(AbstractRepository[Link], ABC):
         include_inactive: bool,
         limit: Optional[int] = None,
     ) -> List[Link]:
-        raise NotImplementedError
+        raise NotImplementedError()
+
     
     @abstractmethod
     async def get_batch(self, shorts: set[Short]) -> List[Link]:
-        raise NotImplementedError
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def increment_redirects_bulk(self, deltas: dict[str, int]) -> None:
+        raise NotImplementedError()
 
 
 class AbstractClickStampRepository(AbstractRepository[ClickStamp], ABC):
     @abstractmethod
     async def create_batch(self, entities: set[ClickStamp]) -> None:
-        raise NotImplementedError
+        raise NotImplementedError()

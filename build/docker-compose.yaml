@@ -19,7 +19,7 @@ services:
       redis:
         condition: service_healthy
     restart: on-failure
-    command: uvicorn app:app --host 0.0.0.0 --port 9100 --reload
+    command: uvicorn app:app --workers 8 --host 0.0.0.0 --port 9100
     
   db:
     image: postgres:16-bullseye
@@ -56,8 +56,8 @@ services:
       AUTH_TYPE: plain
 
       POOL_MODE: transaction
-      MAX_CLIENT_CONN: 500
-      DEFAULT_POOL_SIZE: 20
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 100
     ports:
       - "6432:6432"
     networks:

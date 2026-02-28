@@ -7,6 +7,8 @@ __pycache__/
 env/
 .venv/
 .pytest_cache/
+venv
+locust/
 # If you use a specific name for your virtual environment, add it here, e.g.
 # .venv/
 # For pipenv, you might ignore virtualenv folder
