@@ -20,10 +20,9 @@ class ClickStampCH(Base):
     short = Column(String(128))
     timestamp = Column(DateTime)
     
-    ip = Column(String)
-    user_agent = Column(String)
-    referer = Column(String)
-    request_url = Column(String)
+    geo = Column(String)
+    platform = Column(String)
+    client = Column(String)
 
     @staticmethod
     def entity_to_row(entity: ClickStamp) -> dict:
@@ -32,8 +31,9 @@ class ClickStampCH(Base):
             "link_id": entity.link_id.value,
             "short": entity.short.value,
             "timestamp": entity.timestamp,
-            "ip": entity.ip,
             "user_agent": entity.user_agent,
             "referer": entity.referer,
-            "request_url": entity.request_url,
+            "geo": entity.geo,
+            "platform": entity.platform,
+            "client": entity.client
         }

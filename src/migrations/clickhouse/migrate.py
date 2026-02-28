@@ -7,7 +7,6 @@ cluster = ClickhouseCluster(
     db_port="9000",
     db_user=settings.clickhouse.user,
     db_password=settings.clickhouse.password.get_secret_value(),
-    # db_name=settings.clickhouse.name
 )
 
 cluster.migrate(

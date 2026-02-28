@@ -1,1 +1,1 @@
-from .click_stamp import ClickStampCH
+from .click_stamp_raw import ClickStampCH

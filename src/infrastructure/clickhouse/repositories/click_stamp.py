@@ -1,5 +1,5 @@
 from typing import Iterable
-from sqlalchemy import insert
+from sqlalchemy import insert, text
 
 from infrastructure.clickhouse.client import ClickHouseClient
 from infrastructure.clickhouse.tables import ClickStampCH
@@ -29,5 +29,6 @@ class ClickHouseClickStampRepository(AbstractClickStampRepository):
         rows = [ClickStampCH.entity_to_row(e) for e in entities]
         if not rows:
             return
+        stmt = insert(ClickStampCH)
         with self._client.connect() as conn:
-            conn.execute(insert(ClickStampCH), rows)
+            conn.execute(stmt, rows)

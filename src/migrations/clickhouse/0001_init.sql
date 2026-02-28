@@ -5,10 +5,9 @@ CREATE TABLE IF NOT EXISTS click_stamp
     short String,
     timestamp DateTime,
 
-    ip String,
-    user_agent String,
-    referer String,
-    request_url String
+    geo String,
+    platform String,
+    client String
 )
 ENGINE = MergeTree
 PARTITION BY toYYYYMM(timestamp)

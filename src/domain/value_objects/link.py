@@ -6,6 +6,7 @@ from secrets import token_urlsafe
 from uuid import UUID, uuid4
 from typing import Optional
 from datetime import datetime, timezone
+import random
 
 from domain.value_objects.common import LinkId
 from domain.exceptions import InvalidValue
@@ -107,6 +108,9 @@ class ClickStamp:
     user_agent: Optional[str]
     referer: Optional[str]
     request_url: Optional[str]
+    geo: Optional[str]
+    platform: Optional[str]
+    client: Optional[str]
 
     def __post_init__(self):
         if self.ip is not None and not validators.ipv4(self.ip):
@@ -134,5 +138,8 @@ class ClickStamp:
             ip=ip,
             user_agent=user_agent,
             referer=referer,
-            request_url=request_url
+            request_url=request_url,
+            geo=random.choice(("ru", "de", "kz", "us", "sex", "fr", "ar")),
+            platform=random.choice(("android", "windows", "macos", "ios")),
+            client=random.choice(("firefox", "chrome", "opera"))
         )
