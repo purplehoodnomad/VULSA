@@ -36,3 +36,6 @@ class PostgresClickStampRepository(AbstractClickStampRepository):
         
         self._session.add_all(orm_objects)
         await self._session.flush()
+
+    async def truncate_raw(self) -> None:
+        ...

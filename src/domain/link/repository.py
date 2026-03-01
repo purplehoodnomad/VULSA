@@ -63,3 +63,7 @@ class AbstractClickStampRepository(AbstractRepository[ClickStamp], ABC):
     @abstractmethod
     async def create_batch(self, entities: set[ClickStamp]) -> None:
         raise NotImplementedError()
+    
+    @abstractmethod
+    async def truncate_raw(self) -> None:
+        raise NotImplementedError()

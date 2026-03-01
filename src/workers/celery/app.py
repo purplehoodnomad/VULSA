@@ -26,5 +26,9 @@ app.conf.beat_schedule = {
     "cleanup-links-in-hour": {
         "task": "delete_expired_links",
         "schedule": timedelta(seconds=3600)
+    },
+    "wipe-raw-clicks-in-10-min": {
+        "task": "wipe_raw_clicks",
+        "schedule": timedelta(seconds=10)
     }
 }

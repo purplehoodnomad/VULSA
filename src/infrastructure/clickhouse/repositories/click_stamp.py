@@ -32,3 +32,8 @@ class ClickHouseClickStampRepository(AbstractClickStampRepository):
         stmt = insert(ClickStampCH)
         with self._client.connect() as conn:
             conn.execute(stmt, rows)
+    
+    async def truncate_raw(self) -> None:
+        with self._client.connect() as conn:
+            stmt = text(f"TRUNCATE TABLE IF EXISTS {ClickStampCH.__tablename__}")
+            conn.execute(stmt)

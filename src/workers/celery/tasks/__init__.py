@@ -1,2 +1,3 @@
 from .delete_expired_links import delete_expired_links
 from .sync_links_cache import sync_links_cache
+from .wipe_raw_clicks import wipe_raw_clicks
