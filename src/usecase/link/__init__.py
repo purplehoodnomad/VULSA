@@ -2,3 +2,4 @@ from .create_link.abstract import AbstractCreateLinkUseCase
 from .delete_short.abstract import AbstractDeleteShortUseCase
 from .edit_short.abstract import AbstractEditShortLinkUseCase
 from .get_links_list.abstract import AbstractGetLinksListUseCase
+from .get_link_stats.abstract import AbstractGetLinkStatsUseCase

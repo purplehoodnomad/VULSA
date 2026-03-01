@@ -9,7 +9,14 @@ from domain.value_objects.common import UserId
 from domain.value_objects.link import Short, Long, RedirectLimit, AnonymousEditKey
 from usecase.common.actor import Actor
 
-from api.v1.link.schemas import LinkSchema, SimpleLinkSchema, LinkCreateSchema, LinkUpdateSchema, LinkListQueryParams
+from api.v1.link.schemas import (
+    LinkSchema, 
+    SimpleLinkSchema, 
+    LinkCreateSchema,
+    LinkUpdateSchema,
+    LinkListQueryParams,
+    LinkStatsSchema,
+)
 
 
 @dataclass(slots=True)
@@ -153,4 +160,52 @@ class LinkFilterDto:
             active_status=schema.active_status,
             has_expiration_date=schema.has_expiration_date,
             has_redirect_limit=schema.has_redirect_limit
+        )
+
+
+@dataclass(slots=True, frozen=True)
+class LinkTimeStatsDTO:
+    link_id: UUID
+    stats: dict[str, dict[str, int]] # date, hour, count
+
+@dataclass(slots=True, frozen=True)
+class LinkGeoStatsDTO:
+    link_id: UUID
+    stats: dict[str, int] # geo code, count
+
+@dataclass(slots=True, frozen=True)
+class LinkClientStatsDTO:
+    link_id: UUID
+    stats: dict[tuple[str, str], int] # (platform, client): count
+
+@dataclass(slots=True, frozen=True)
+class LinkStatsDTO:
+    short: str
+    click_count: int
+    by_time: dict[str, dict[str, int]] # date, hour, count
+    by_geo: dict[str, int] # geo code, count
+    by_client: dict[tuple[str, str], int] # (platform, client): count
+
+    @staticmethod
+    def create(
+        entity: Link,
+        by_time: LinkTimeStatsDTO,
+        by_geo: LinkGeoStatsDTO,
+        by_client: LinkClientStatsDTO,
+    ) -> "LinkStatsDTO":
+        return LinkStatsDTO(
+            short=entity.short.value,
+            click_count=entity.times_used,
+            by_time=by_time.stats,
+            by_geo=by_geo.stats,
+            by_client=by_client.stats
+        )
+
+    def to_schema(self) -> LinkStatsSchema:
+        return LinkStatsSchema(
+            short=self.short,
+            click_count=self.click_count,
+            by_time=self.by_time,
+            by_geo=self.by_geo,
+            by_client=self.by_client
         )

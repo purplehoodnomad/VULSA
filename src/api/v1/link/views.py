@@ -1,25 +1,25 @@
-from uuid import UUID
-
 from fastapi import status, APIRouter, Depends
 from fastapi.responses import JSONResponse, Response
 
 from api.v1.dependencies import get_actor
 from usecase.common.actor import Actor
 
-from .schemas import LinkSchema, LinkCreateSchema, LinkListSchema, LinkListQueryParams, LinkUpdateSchema
+from .schemas import LinkSchema, LinkCreateSchema, LinkListSchema, LinkListQueryParams, LinkUpdateSchema, LinkStatsSchema
 
 from usecase.link.utils.dto import LinkCreateDTO, LinkUpdateDTO, LinkFilterDto
 from usecase.link import (
     AbstractCreateLinkUseCase,
     AbstractDeleteShortUseCase,
     AbstractEditShortLinkUseCase,
-    AbstractGetLinksListUseCase
+    AbstractGetLinksListUseCase,
+    AbstractGetLinkStatsUseCase
 )
 from .dependencies import (
     get_link_create_usecase,
     get_get_link_list_usecase,
     get_delete_short_usecase,
-    get_edit_short_link_usecase
+    get_edit_short_link_usecase,
+    get_get_link_stats_usecase
 )
 
 
@@ -83,5 +83,19 @@ async def edit_short_link(
 
     return JSONResponse(
         content=link_dto.to_schema().model_dump(mode="json"),
+        status_code=status.HTTP_200_OK
+    )
+
+@router.get("/{short}", response_model=LinkStatsSchema)
+async def get_link_stats(
+    short: str,
+    actor: Actor = Depends(get_actor),
+    usecase: AbstractGetLinkStatsUseCase = Depends(get_get_link_stats_usecase)
+) -> JSONResponse:
+    actor.validate_actor_authentication()
+    stats = await usecase.execute(actor, short)
+    
+    return JSONResponse(
+        content=stats.to_schema().model_dump(mode="json"),
         status_code=status.HTTP_200_OK
     )

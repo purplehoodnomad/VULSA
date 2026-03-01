@@ -9,13 +9,17 @@ from usecase.link.create_link.abstract import AbstractCreateLinkUseCase
 from usecase.link.get_links_list.abstract import AbstractGetLinksListUseCase
 from usecase.link.delete_short.abstract import AbstractDeleteShortUseCase
 from usecase.link.edit_short.abstract import AbstractEditShortLinkUseCase
+from usecase.link.get_link_stats.abstract import AbstractGetLinkStatsUseCase
 
 from usecase.link.create_link.implementation import CreateLinkUseCase
 from usecase.link.get_links_list.implementation import GetLinksListUseCase
 from usecase.link.delete_short.implementation import DeleteShortUseCase
 from usecase.link.edit_short.implementation import EditShortLinkUseCase
+from usecase.link.get_link_stats.implementation import GetLinkStatsUseCase
 
 from domain.link.cache import AbstractLinkCache
+from infrastructure.clickhouse.client import ClickHouseClient
+from infrastructure.clickhouse.dependencies import get_clickhouse_client
 
 
 def get_link_create_usecase(session: AsyncSession = Depends(get_async_session)) -> AbstractCreateLinkUseCase:
@@ -41,3 +45,11 @@ def get_edit_short_link_usecase(
     uow = get_link_uow(session)
     
     return EditShortLinkUseCase(uow, link_cache)
+
+def get_get_link_stats_usecase(
+    session: AsyncSession = Depends(get_async_session),
+    ch_client: ClickHouseClient = Depends(get_clickhouse_client)
+) -> AbstractGetLinkStatsUseCase:
+    uow = get_link_uow(session, ch_client)
+    
+    return GetLinkStatsUseCase(uow)

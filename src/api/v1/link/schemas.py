@@ -49,3 +49,15 @@ class LinkListQueryParams(BaseModel):
     active_status: Optional[bool] = None
     has_expiration_date: Optional[bool] = None
     has_redirect_limit: Optional[bool] = None
+
+
+class LinkStatsSchema(BaseModel):
+    short: str
+    click_count: int
+    by_time: dict[str, dict[str, int]] # date, hour, count
+    by_geo: dict[str, int] # geo code, count
+    by_client: dict[tuple[str, str], int] # (platform, client): count
+
+    model_config = {
+        "arbitrary_types_allowed": True  # для tuple ключей
+    }

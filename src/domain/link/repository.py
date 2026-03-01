@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
 
@@ -8,6 +9,8 @@ from domain.value_objects.link import Short, AnonymousEditKey, ClickStamp
 from domain.value_objects.common import UserId
 
 from .entity import Link
+
+from usecase.link.utils.dto import LinkTimeStatsDTO, LinkGeoStatsDTO, LinkClientStatsDTO
 
 
 class AbstractLinkRepository(AbstractRepository[Link], ABC):
@@ -66,4 +69,16 @@ class AbstractClickStampRepository(AbstractRepository[ClickStamp], ABC):
     
     @abstractmethod
     async def truncate_raw(self) -> None:
+        raise NotImplementedError()
+    
+    @abstractmethod
+    async def get_link_stats_by_time(self, link: Link) -> LinkTimeStatsDTO:
+        raise NotImplementedError()
+    
+    @abstractmethod
+    async def get_link_stats_by_geo(self, link: Link) -> LinkGeoStatsDTO:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_link_stats_by_client(self, link: Link) -> LinkClientStatsDTO:
         raise NotImplementedError()
