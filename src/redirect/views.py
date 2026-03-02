@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse
 from usecase.redirect.abstract import AbstractLinkRedirectUseCase
 
 from .dependencies import get_link_redirect_usecase, register_click
-from infrastructure.broker.kafka.dependencies import get_producer
+from infrastructure.broker.kafka.dependencies import get_kafka_producer
 from infrastructure.broker.abstract.producer import AbstractProducer
 
 
@@ -15,7 +15,7 @@ router = APIRouter()
 async def process_redirect(
    short: str,
    request: Request,
-   producer: AbstractProducer = Depends(get_producer),
+   producer: AbstractProducer = Depends(get_kafka_producer),
    usecase: AbstractLinkRedirectUseCase = Depends(get_link_redirect_usecase),
 ) -> RedirectResponse:
    link = await usecase.execute(short)

@@ -10,10 +10,6 @@ class AbstractBrokerClient(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get_producer(self, **kwargs) -> AbstractProducer:
-        raise NotImplementedError()
-
-    @abstractmethod
     async def get_consumer(self, topic: str, **kwargs) -> AbstractConsumer:
         raise NotImplementedError()
 

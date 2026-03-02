@@ -29,7 +29,8 @@ async def lifespan(app: FastAPI):
 
     kafka = container.kafka_client()
     kafka.init(settings.kafka.get_url())
-    await kafka.get_producer()
+    producer = container.kafka_producer()
+    await producer.start()
 
     clickhouse = container.clickhouse_client()
     clickhouse.init(settings.clickhouse.get_url())
@@ -41,6 +42,7 @@ async def lifespan(app: FastAPI):
         await sessionmanager.close()
         await redis.close()
         await kafka.close()
+        await producer.stop()
         clickhouse.close()
     
 

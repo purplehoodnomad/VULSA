@@ -2,6 +2,7 @@ from enum import Enum
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Singleton, Factory
 
+from settings import settings
 from infrastructure.sqlalchemy.session_manager import DatabaseSessionManager
 from infrastructure.clickhouse.client import ClickHouseClient
 
@@ -15,6 +16,8 @@ from infrastructure.cache.redis.client import RedisClient
 from infrastructure.cache.redis.repositories.link_cache import RedisLinkCache
 
 from infrastructure.broker.kafka.client import KafkaClient
+from infrastructure.broker.kafka.producer import KafkaProducer
+from infrastructure.broker.kafka.serializers import serialize
 
 from usecase.common.event_bus import EventBus
 
@@ -40,6 +43,12 @@ class Container(DeclarativeContainer):
     link_cache_factory = Factory(RedisLinkCache, client=redis_client)
 
     kafka_client = Singleton(KafkaClient)
+    kafka_producer = Singleton(
+        KafkaProducer,
+        bootstrap_servers=settings.kafka.get_url(),
+        key_serializer=serialize,
+        value_serializer=serialize
+    )
 
     clickhouse_client = Singleton(ClickHouseClient)
 

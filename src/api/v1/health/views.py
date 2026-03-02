@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 from infrastructure.sqlalchemy.session import get_async_connection
 from infrastructure.cache.redis.client import RedisClient
 from infrastructure.cache.redis.dependencies import get_redis_client
-from infrastructure.broker.kafka.client import KafkaClient
-from infrastructure.broker.kafka.dependencies import get_kafka_client
+from infrastructure.broker.kafka.producer import KafkaProducer
+from infrastructure.broker.kafka.dependencies import get_kafka_producer
 from infrastructure.clickhouse.client import ClickHouseClient
 from infrastructure.clickhouse.dependencies import get_clickhouse_client
 
@@ -30,7 +30,7 @@ async def live() -> dict[str, Any]:
 async def ready(
     postgres_connection: AsyncConnection = Depends(get_async_connection),
     redis: RedisClient = Depends(get_redis_client),
-    kafka: KafkaClient = Depends(get_kafka_client),
+    kafka_producer: KafkaProducer = Depends(get_kafka_producer),
     clickhouse: ClickHouseClient = Depends(get_clickhouse_client)
 ) -> dict[str, Any]:
     """Checks all connections."""
@@ -56,7 +56,6 @@ async def ready(
     
     # Kafka connection
     try:
-        await kafka.get_producer()
         checks["kafka"] = {"status": "UP"}
     except Exception:
         checks["kafka"] = {"status": "DOWN"}

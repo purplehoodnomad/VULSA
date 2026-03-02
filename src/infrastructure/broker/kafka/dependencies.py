@@ -12,6 +12,6 @@ from infrastructure.broker.kafka.client import KafkaClient
 async def get_kafka_client(client: KafkaClient = Depends(Provide[Container.kafka_client])) -> KafkaClient:
     return client
 
-
-async def get_producer(client: KafkaClient = Depends(get_kafka_client)) -> KafkaProducer:
-    return await client.get_producer()
+@inject
+async def get_kafka_producer(producer: KafkaProducer = Depends(Provide[Container.kafka_producer])) -> KafkaProducer:
+    return producer
